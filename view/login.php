@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Minha Página de Prática</title>
     
-    <link rel="stylesheet" href="css/registro_usuario.css">
+    <link rel="stylesheet" href="css/login_usuario.css">
 </head>
 <body>
 
     <header class="barra-fixa">
         <nav>
-            <button onclick="window.location.href='registro_usuario_view.php'">Início</button>
+            <button onclick="window.location.href='login.php'">Início</button>
             <button onclick="window.location.href='sobre.html'">Sobre</button>
             <button onclick="window.location.href='contato.html'">Contato</button>
         </nav>
@@ -33,6 +33,6 @@
         </form>
     </main>
 
-    <script src="../js/registro_usuario.js"></script>
+    <script src="../js/login_usuario.js"></script>
 </body>
 </html>
