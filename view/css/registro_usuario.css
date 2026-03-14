@@ -1,0 +1,107 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: #f4f4f9;
+    color: #333;
+    font-size: 1.2rem; 
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    padding-top: 80px; 
+}
+
+/* --- Barra Fixa no Topo --- */
+.barra-fixa {
+    position: fixed; /* Prende o elemento na tela */
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #0056b3;
+    padding: 1rem 2rem;
+    display: flex; 
+    justify-content: center;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+nav button {
+    background-color: #004494;
+    color: white;
+    border: 1px solid #003370;
+    padding: 0.6rem 1.2rem;
+    margin: 0 0.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.3s;
+}
+
+nav button:hover {
+    background-color: #007bff;
+}
+
+/* --- Área Central --- */
+main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+}
+
+h1 {
+    margin-bottom: 1.5rem;
+}
+
+/* --- Formulário com Borda e Fundo Azul --- */
+form {
+    background-color: #0056b3;
+    color: white; 
+    border: 3px solid #003370;
+    padding: 2rem;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 450px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+form label {
+    font-weight: bold;
+}
+
+form input {
+    padding: 0.8rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1.1rem;
+    color: #333;
+}
+
+form button[type="button"] {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 1rem;
+    font-size: 1.1rem;
+    cursor: pointer;
+    border-radius: 4px;
+    margin-top: 1rem;
+    font-weight: bold;
+}
+
+form button[type="button"]:hover {
+    background-color: #218838;
+}
+
+/* Ocultando a div de alerta enquanto está vazia */
+#mensagem-alerta:empty {
+    display: none;
+}

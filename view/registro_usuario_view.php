@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minha Página de Prática</title>
+    
+    <link rel="stylesheet" href="css/registro_usuario.css">
+</head>
+<body>
+
+    <header class="barra-fixa">
+        <nav>
+            <button onclick="window.location.href='registro_usuario_view.php'">Início</button>
+            <button onclick="window.location.href='sobre.html'">Sobre</button>
+            <button onclick="window.location.href='contato.html'">Contato</button>
+        </nav>
+    </header>
+
+    <main>
+        <h1>Login de Usuário</h1>
+        
+        <div id="mensagem-alerta"></div>
+
+        <form id="formContato">
+            <label for="user_acess">Usuário:</label>
+            <input type="text" id="user_acess" name="userAcess" placeholder="Digite seu usuário">
+
+            <label for="passCheck">Senha:</label>
+            <input type="password" id="passCheck" name="password" placeholder="Digite sua senha">
+
+            <button type="button" onclick="realizarLogin()">Login</button>
+        </form>
+    </main>
+
+    <script src="../js/registro_usuario.js"></script>
+</body>
+</html>
