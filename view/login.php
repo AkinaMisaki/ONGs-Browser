@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minha Página de Prática</title>
+    <title>Login</title>
     
     <link rel="stylesheet" href="css/registro_usuario.css">
 </head>
@@ -11,7 +11,7 @@
 
     <header class="barra-fixa">
         <nav>
-            <button onclick="window.location.href='login.php'">Início</button>
+            <button onclick="window.location.href='../index.php'">Início</button>
             <button onclick="window.location.href='sobre.html'">Sobre</button>
             <button onclick="window.location.href='contato.html'">Contato</button>
         </nav>

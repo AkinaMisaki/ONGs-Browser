@@ -11,7 +11,7 @@
 
     <header class="barra-fixa">
         <nav>
-            <button onclick="window.location.href='login.php'">Início</button>
+            <button onclick="window.location.href='../index.php'">Início</button>
             <button onclick="window.location.href='sobre.html'">Sobre</button>
             <button onclick="window.location.href='contato.html'">Contato</button>
         </nav>

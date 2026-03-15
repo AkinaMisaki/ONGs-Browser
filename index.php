@@ -17,7 +17,9 @@ $result = $conn->query($sql);
 <body>
 
 <h1>Teste de ONGs Aleatórias</h1>
-
+<a href="view/login.php">Login</a>
+<br>
+<a href="view/registrar.php">Registrar</a>
 <?php
 if ($result->num_rows > 0) {
     while($row = $result->fetch_assoc()) {
