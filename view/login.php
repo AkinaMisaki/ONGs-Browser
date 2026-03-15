@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Minha Página de Prática</title>
     
-    <link rel="stylesheet" href="css/login_usuario.css">
+    <link rel="stylesheet" href="css/registro_usuario.css">
 </head>
 <body>
 
@@ -19,8 +19,6 @@
 
     <main>
         <h1>Login de Usuário</h1>
-        
-        <div id="mensagem-alerta"></div>
 
         <form id="formContato">
             <label for="user_acess">Usuário:</label>
@@ -31,8 +29,9 @@
 
             <button type="button" onclick="realizarLogin()">Login</button>
         </form>
+        <a href="registro_usuario.php">Novo por Aqui? Cadastre-se!</a>
     </main>
 
-    <script src="../js/login_usuario.js"></script>
+    <script src="../js/registro_usuario.js"></script>
 </body>
 </html>
