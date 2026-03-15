@@ -32,6 +32,6 @@
         <a href="registro_usuario.php">Novo por Aqui? Cadastre-se!</a>
     </main>
 
-    <script src="../js/registro_usuario.js"></script>
+    <script src="../js/login_usuario.js"></script>
 </body>
 </html>
