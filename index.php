@@ -13,6 +13,7 @@ $result = $conn->query($sql);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ONGs Browser</title>
+    <link rel="stylesheet" href="index.css">
 </head>
 <body>
 
@@ -20,10 +21,11 @@ $result = $conn->query($sql);
 <a href="view/login.php">Login</a>
 <br>
 <a href="view/registrar.php">Registrar</a>
+<div class='ongs-container'>
 <?php
 if ($result->num_rows > 0) {
     while($row = $result->fetch_assoc()) {
-        echo "<div style='border:1px solid #ccc; padding:10px; margin:10px;'>";
+        echo "<div class='ongs-result'>";
         echo "<h2>" . htmlspecialchars($row["nome_ong"]) . "</h2>";
         echo "<p>" . htmlspecialchars($row["descricao"]) . "</p>";
         echo "</div>";
@@ -34,6 +36,6 @@ if ($result->num_rows > 0) {
 
 $conn->close();
 ?>
-
+</div>
 </body>
 </html>

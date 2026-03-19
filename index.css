@@ -1,0 +1,17 @@
+.ongs-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+}
+
+.ongs-result {
+    background-color: #f2f2f2;
+    aspect-ratio: 1 / 1; /* mantém quadrado */
+    display: flex; 
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    flex-direction: column;
+}
