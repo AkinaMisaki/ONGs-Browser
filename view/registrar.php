@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Minha Página de Prática</title>
     
-    <link rel="stylesheet" href="css/login_usuario.css">
+    <link rel="stylesheet" href="css/login.css">
 </head>
 <body>
 
@@ -26,6 +26,9 @@
             <label for="user_name">Nome:</label>
             <input type="text" id="new_user_name" name="userName" placeholder="Digite seu nome">
 
+            <label for="user_name">E-mail:</label>
+            <input type="email" id="new_user_email" name="userEmail" placeholder="Digite seu email">
+
             <label for="user_acess">Novo Usuário:</label>
             <input type="text" id="new_user_acess" name="userAcess" placeholder="Digite seu usuário">
 
@@ -36,6 +39,6 @@
         </form>
     </main>
 
-    <script src="../js/login_usuario.js"></script>
+    <script src="../js/login.js"></script>
 </body>
 </html>
