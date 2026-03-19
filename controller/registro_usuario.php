@@ -7,14 +7,20 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     // Primeira sessão do processo de receber os dados e cuidar com eles (validação e segurança).
     $rawName = (isset($_POST['nome']) && is_string($_POST['nome'])) ? trim($_POST['nome']) : '';
+    $rawEmail = (isset($_POST['email']) && is_string($_POST['email'])) ? trim($_POST['email']) : '';
     $rawUsuario = (isset($_POST['usuario']) && is_string($_POST['usuario'])) ? trim($_POST['usuario']) : '';
     $rawSenha = (isset($_POST['senha']) && is_string($_POST['senha'])) ? trim($_POST['senha']) : '';
 
     // Garante que os dados sejam tratados como strings e que espaços extras sejam removidos. Se não forem enviados, ficam vazios.
     $usuarioSeguro = htmlspecialchars($rawUsuario, ENT_QUOTES, 'UTF-8');
     $nomeSeguro = htmlspecialchars($rawName, ENT_QUOTES, 'UTF-8');
+    $nomeSeguro = htmlspecialchars($rawEmail, ENT_QUOTES, 'UTF-8');
     $senhaSegura = htmlspecialchars($rawSenha, ENT_QUOTES, 'UTF-8');
     $senhaCriptografada = password_hash($senhaSegura, PASSWORD_DEFAULT); // Criptografa a senha usando bcrypt
+
+    // Após definir a criptografia para senha e o controle da senha ( se a senha segue os 5 principios, 8 digitos, maiuscula e minuscula, caracter especial e numero)
+    // Implementar o envio dessas informações para o BD.
+    // Configurar também uma autenticação de 2 fatores para validação do email
 
     // Implementar a tratativa de conexão com o banco de dados para puxar as credencias do usuário mandando o usuário, retornando a senha criptografada do banco, e comparar com a senha enviada pelo usuário usando password_verify() para validar o login.
     if (!empty($usuarioSeguro) && !empty($rawSenha)) {
