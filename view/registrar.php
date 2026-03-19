@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Minha Página de Prática</title>
     
-    <link rel="stylesheet" href="css/login.css">
+    <link rel="stylesheet" href="css/login_usuario.css">
 </head>
 <body>
 
@@ -39,6 +39,6 @@
         </form>
     </main>
 
-    <script src="../js/login.js"></script>
+    <script src="../js/registro.js"></script>
 </body>
 </html>

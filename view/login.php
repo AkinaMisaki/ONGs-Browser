@@ -30,9 +30,9 @@
             <button type="button" onclick="realizarLogin()">Login</button>
             <button><a href="recuperarSenhaView.html">esqueceu senha a senha" ?</a></button>
         </form>
-        <a href="registro_usuario.php">Novo por Aqui? Cadastre-se!</a>
+        <a href="registrar.php">Novo por Aqui? Cadastre-se!</a>
     </main>
 
-    <script src="../js/login_usuario.js"></script>
+    <script src="../js/login.js"></script>
 </body>
 </html>
