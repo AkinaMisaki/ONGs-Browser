@@ -1,6 +1,7 @@
 async function realizarCadastroUsuario() {
     // Pegando os valores
     const campoUsuario = document.getElementById('new_user_acess').value.trim();
+    const campoEmail = document.getElementById('new_user_email').value.trim();
     const campoSenha = document.getElementById('new_passCheck').value.trim();
     const campoNome = document.getElementById('new_user_name').value.trim();
 
@@ -8,6 +9,10 @@ async function realizarCadastroUsuario() {
     if (campoUsuario === '') {
         alert('Atenção: O campo Usuário é obrigatório!');
         return;
+    }
+
+    if (campoEmail === '') {
+        alert('Atenção: Campo e-mail é obrigatório');
     }
 
     if (campoSenha === '') {
@@ -22,6 +27,7 @@ async function realizarCadastroUsuario() {
     // Empacota os dados
     const dadosFormulario = new FormData();
     dadosFormulario.append('usuario', campoUsuario);
+    dadosFormulario.append('email', campoEmail);
     dadosFormulario.append('senha', campoSenha);
     dadosFormulario.append('nome', campoNome);
 
