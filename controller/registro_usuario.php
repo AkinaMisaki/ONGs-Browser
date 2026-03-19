@@ -16,7 +16,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $nomeSeguro = htmlspecialchars($rawName, ENT_QUOTES, 'UTF-8');
     $nomeSeguro = htmlspecialchars($rawEmail, ENT_QUOTES, 'UTF-8');
     $senhaSegura = htmlspecialchars($rawSenha, ENT_QUOTES, 'UTF-8');
-    $senhaCriptografada = password_hash($senhaSegura, PASSWORD_DEFAULT); // Criptografa a senha usando bcrypt
+    $options = [
+    'memory_cost' => 65536, 
+    'time_cost'   => 4,  
+    'threads'     => 2,   ];
+    $senhaCriptografada = password_hash($senhaSegura, PASSWORD_ARGON2ID, $options);
 
     // Após definir a criptografia para senha e o controle da senha ( se a senha segue os 5 principios, 8 digitos, maiuscula e minuscula, caracter especial e numero)
     // Implementar o envio dessas informações para o BD.
