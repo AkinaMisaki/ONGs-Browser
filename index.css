@@ -43,27 +43,71 @@ body {
 .container {
     padding: 100px 30px 30px;
     margin: auto;
+    max-width: 80%;
+}
+
+.carousel-wrapper {
+    position: relative;
+    overflow-x: hidden;
+    overflow-y: visible;
+    padding: 0 50px;
 }
 
 .grid {
+    position: relative;
+    z-index: 1;
     display: flex;
-    flex-wrap: wrap;
     gap: 20px;
-    justify-content: center;
+    overflow: hidden;
+    padding-bottom: 10px;
+
+    scrollbar-width: none;
+    pointer-events: auto;
+
+    -webkit-mask-image: linear-gradient(
+        to right,
+        transparent 0%,
+        black 10%,
+        black 90%,
+        transparent 100%
+    );
+    mask-image: linear-gradient(
+        to right,
+        transparent 0%,
+        black 10%,
+        black 90%,
+        transparent 100%
+    );
+}
+
+.grid::-webkit-scrollbar {
+    display: none;
+}
+
+.grid::-webkit-scrollbar-thumb {
+    background: #bbb;
+    border-radius: 10px;
 }
 
 .card {
-    flex: 1 1 250px; /* 👈 key change */
-    max-width: 260px;
+    height: 320px;
     background: white;
     border-radius: 12px;
     padding: 20px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    min-width: 260px;
+    max-width: 260px;
+    flex: 0 0 auto;
+
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+
     transition: transform 0.2s, box-shadow 0.2s;
-    height: 100%;
+
+    opacity: 0;
+    animation: fadeInUp 0.6s ease forwards;
+    will-change: transform, opacity;
 }
 
 .card:hover {
@@ -79,10 +123,14 @@ body {
 
 .card p {
     font-size: 0.95rem;
-    min-height: 60px;
     flex: 1;
     margin-bottom: 15px;
     color: #555;
+
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
 }
 
 .card button {
@@ -105,4 +153,74 @@ body {
     padding: 20px;
     margin-top: 30px;
     color: #777;
+}
+
+.carousel-controls {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 10px;
+    position: relative;
+    overflow: hidden;
+    padding: 0 40px;
+}
+
+.carousel-controls button {
+    background: #0d47a1;
+    color: white;
+    border: none;
+    margin-left: 10px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.carousel-controls button:hover {
+    background: #1565c0;
+}
+
+.carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+
+    width: clamp(40px, 5vw, 60px);
+    height: clamp(40px, 5vw, 60px);
+    padding: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #0d47a1;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 20;
+
+    font-size: 18px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.carousel-btn:hover {
+    background: #1565c0;
+}
+
+.carousel-btn.left {
+    left: 5px;
+}
+
+.carousel-btn.right {
+    right: 5px;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

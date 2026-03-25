@@ -1,7 +1,7 @@
 <?php
 include __DIR__ . '/../../config/configuni.php';
 
-$sql = "SELECT id_ong, nome_ong, descricao FROM ong ORDER BY RAND() LIMIT 5";
+$sql = "SELECT id_ong, nome_ong, descricao FROM ong ORDER BY RAND() LIMIT 20";
 $result = $conn->query($sql);
 ?>
 
@@ -24,25 +24,32 @@ $result = $conn->query($sql);
 </header>
 
 <div class="container">
-    <div class="grid">
+    <div class="carousel-wrapper">
+        <button class="carousel-btn left" onclick="scrollCardsLeft()">◀</button>
+        <div class="grid">
 
-    <?php
-    if ($result->num_rows > 0) {
-        while($row = $result->fetch_assoc()) {
-            echo "<div class='card'>";
-            echo "<h2>" . htmlspecialchars($row['nome_ong']) . "</h2>";
-            echo "<p>" . htmlspecialchars($row['descricao']) . "</p>";
-            echo "<button>Ver mais</button>";
-            echo "</div>";
+        <?php
+        $delay = 0;
+
+        if ($result->num_rows > 0) {
+            while($row = $result->fetch_assoc()) {
+                echo "<div class='card' style='animation-delay: {$delay}s'>";
+                echo "<h2>" . htmlspecialchars($row['nome_ong']) . "</h2>";
+                echo "<p>" . htmlspecialchars($row['descricao']) . "</p>";
+                echo "<button>Ver mais</button>";
+                echo "</div>";
+
+                $delay += 0.1;
+            }
+        } else {
+            echo "Nenhuma ONG encontrada.";
         }
-    } else {
-        echo "Nenhuma ONG encontrada.";
-    }
 
-    $conn->close();
-    ?>
+        $conn->close();
+        ?>
 
-    </div>
+        </div>
+        <button class="carousel-btn right" onclick="scrollCardsRight()">▶</button>
 </div>
 
 <footer class="footer">
@@ -50,4 +57,71 @@ $result = $conn->query($sql);
 </footer>
 
 </body>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const grid = document.querySelector('.grid');
+    if (!grid) return;
+
+    const cards = Array.from(grid.children);
+    if (cards.length === 0) return;
+
+    const gap = 20;
+    const cardWidth = cards[0].offsetWidth + gap;
+    const total = cardWidth * cards.length;
+
+    function makeClones(nodes) {
+        return nodes.map(card => {
+            const clone = card.cloneNode(true);
+            clone.style.animation = 'none';
+            clone.style.opacity = '1';
+            return clone;
+        });
+    }
+
+    const leftFrag = document.createDocumentFragment();
+    makeClones(cards).forEach(c => leftFrag.appendChild(c));
+    grid.insertBefore(leftFrag, grid.firstChild);
+
+    makeClones(cards).forEach(c => grid.appendChild(c));
+
+    grid.style.overflow = 'hidden';
+    grid.style.scrollBehavior = 'auto';
+
+    let current = total;
+    let target  = total;
+    grid.scrollLeft = current;
+
+    let rafId = null;
+
+    function tick() {
+        const diff = target - current;
+
+        if (Math.abs(diff) < 0.5) {
+            current = target;
+            rafId = null;
+        } else {
+            current += diff * 0.12;
+            rafId = requestAnimationFrame(tick);
+        }
+
+        if (current < total) {
+            current += total;
+            target  += total;
+        } else if (current >= total * 2) {
+            current -= total;
+            target  -= total;
+        }
+
+        grid.scrollLeft = current;
+    }
+
+    function scrollBy(amount) {
+        target += amount;
+        if (!rafId) rafId = requestAnimationFrame(tick);
+    }
+
+    window.scrollCardsLeft  = () => scrollBy(-cardWidth);
+    window.scrollCardsRight = () => scrollBy( cardWidth);
+});
+</script>
 </html>
