@@ -3,36 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minha Página de Prática</title>
-    
+    <title>Recuperação de Senha</title>
     <link rel="stylesheet" href="css/login_usuario.css">
 </head>
 <body>
 
-    <header class="barra-fixa">
-        <nav>
-            <button onclick="window.location.href='../index.php'">Início</button>
-            <button onclick="window.location.href='sobre.html'">Sobre</button>
-            <button onclick="window.location.href='contato.html'">Contato</button>
-        </nav>
-    </header>
+<header class="barra-fixa">
+    <nav>
+        <button onclick="window.location.href='../index.php'">Início</button>
+        <button onclick="window.location.href='sobre.html'">Sobre</button>
+        <button onclick="window.location.href='contato.html'">Contato</button>
+    </nav>
+</header>
 
-    <main>
-        <h1>Recuperacao de senha</h1>
-        
-        <div id="mensagem-alerta"></div>
+<main>
+    <h1>Recuperação de Senha</h1>
 
-        <form id="formContato">
+    <div id="mensagem-alerta"></div>
 
+    <form id="formContato">
+        <label for="new_passCheck">Email:</label>
+        <input 
+            type="email" 
+            id="new_mailCheck" 
+            name="email" 
+            placeholder="Digite seu email"
+            autocomplete="email"
+        >
+        <button type="button" onclick="realizarCadastroUsuario()">Enviar</button>
+    </form>
 
+    <div class="form-links">
+        <a href="login.php">Voltar ao Login</a>
+    </div>
+</main>
 
-            <label for="passCheck">Email:</label>
-            <input type="email" id="new_passCheck" name="password" placeholder="Digite seu email">
+<script src="../js/reset_senha.js"></script>
+</body>
+</html>
 
-            <button type="button" onclick="realizarCadastroUsuario()">Enviar</button>
-        </form>
-    </main>
+    <div class="form-links">
+        <a href="login.php">Voltar ao Login</a>
+    </div>
+</main>
 
-    <script src="../js/login_usuario.js"></script>
+<script src="../js/reset_senha.js"></script>
 </body>
 </html>
