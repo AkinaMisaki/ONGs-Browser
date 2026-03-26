@@ -224,3 +224,19 @@ body {
         transform: translateY(0);
     }
 }
+
+.site-description {
+    padding: 0 50px 20px;
+    margin: 0;
+}
+
+.site-description p {
+    font-size: 0.97rem;
+    color: #555;
+    line-height: 1.8;
+    margin: 0;
+}
+
+.site-description strong {
+    color: #0d47a1;
+}

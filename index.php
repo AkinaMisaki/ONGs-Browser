@@ -24,6 +24,10 @@ $result = $conn->query($sql);
 </header>
 
 <div class="container">
+    <div class="site-description">
+        <p>O <strong>ONGs Browser</strong> é uma plataforma brasileira dedicada a dar visibilidade a organizações não governamentais, apresentando-as em uma interface moderna e intuitiva. O site exibe uma seleção de ONGs diretamente do banco de dados, permitindo que os visitantes naveguem rapidamente pelos nomes e descrições das organizações. Com um design em tons de azul, cards animados e navegação simplificada, o ONGs Browser torna a descoberta de causas sociais uma experiência acessível e agradável. Com acesso rápido a login e cadastro, a plataforma convida os usuários a irem além da navegação e se tornarem participantes ativos no ecossistema de impacto social.</p>
+    </div>
+
     <div class="carousel-wrapper">
         <button class="carousel-btn left" onclick="scrollCardsLeft()">◀</button>
         <div class="grid">
