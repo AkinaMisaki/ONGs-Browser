@@ -28,7 +28,7 @@
             <input type="password" id="passCheck" name="password" placeholder="Digite sua senha">
 
             <button type="button" onclick="realizarLogin()">Login</button>
-            <button><a href="recuperarSenhaView.html">esqueceu senha a senha" ?</a></button>
+            <button><a href="recuperar_senha.html">esqueceu senha a senha" ?</a></button>
         </form>
         <a href="registrar.php">Novo por Aqui? Cadastre-se!</a>
     </main>

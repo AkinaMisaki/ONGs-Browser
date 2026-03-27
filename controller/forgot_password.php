@@ -1,8 +1,5 @@
 <?php
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
 header('Content-Type: application/json');
-
 require __DIR__ . '/../../vendor/autoload.php';
 include __DIR__ . '/../../../config/configuni.php';
 
@@ -14,28 +11,32 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     exit;
 }
 
+// Valida email
 $email = isset($_POST['email']) ? trim($_POST['email']) : '';
-
 if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
     echo json_encode(['sucesso' => false, 'mensagem' => 'Email inválido.']);
     exit;
 }
 
+// Checa se o email esta no BD
 $stmt = $conn->prepare("SELECT id_usuario FROM usuario WHERE email = ?");
 $stmt->bind_param("s", $email);
 $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows === 1) {
-    $token = bin2hex(random_bytes(32));
+
+    // Gera token e define a validade por 1 hora
+    $token  = bin2hex(random_bytes(32));
     $expire = date("Y-m-d H:i:s", strtotime("+1 hour"));
 
     $stmt = $conn->prepare("UPDATE usuario SET reset_token=?, reset_expire=? WHERE email=?");
     $stmt->bind_param("sss", $token, $expire, $email);
     $stmt->execute();
 
-    $resetLink = "https://hanafuda.moe/universidade/view/reset_password.php?token=$token";
+    $resetLink = "https://hanafuda.moe/universidade/view/alterar_senha.php?token=$token";
 
+    // Manda email por SMTP
     $mail = new PHPMailer(true);
     try {
         $mail->SMTPDebug  = 0;
@@ -47,7 +48,6 @@ if ($result->num_rows === 1) {
         $mail->Port       = 587;
         $mail->Username   = 'noreply@hanafuda.moe';
         $mail->Password   = $SMTP_PASSWORD;
-
         $mail->setFrom('noreply@hanafuda.moe', 'ONGs Browser');
         $mail->addAddress($email);
         $mail->isHTML(true);
@@ -81,22 +81,22 @@ if ($result->num_rows === 1) {
             </div>";
 
         $mail->send();
-
         echo json_encode([
-            'sucesso' => true,
+            'sucesso'  => true,
             'mensagem' => 'Se este email estiver cadastrado, você receberá as instruções em breve.'
         ]);
-
     } catch (Exception $e) {
+        // Se der erro não mostra o erro pro usuário, só um erro genérico
         echo json_encode([
-            'sucesso' => false,
+            'sucesso'  => false,
             'mensagem' => 'Não foi possível enviar o email. Tente novamente.'
         ]);
     }
 
 } else {
+    // Se o email não estiver no BD, ainda mostra a mesma mensagem pra evitar enumeração de email
     echo json_encode([
-        'sucesso' => true,
+        'sucesso'  => true,
         'mensagem' => 'Se este email estiver cadastrado, você receberá as instruções em breve.'
     ]);
 }
@@ -104,4 +104,3 @@ if ($result->num_rows === 1) {
 $stmt->close();
 $conn->close();
 exit;
-?>

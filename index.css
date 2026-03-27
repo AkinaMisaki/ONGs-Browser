@@ -126,11 +126,11 @@ body {
     flex: 1;
     margin-bottom: 15px;
     color: #555;
-
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
+    line-clamp: 3;
 }
 
 .card button {
@@ -160,7 +160,6 @@ body {
     justify-content: flex-end;
     margin-bottom: 10px;
     position: relative;
-    overflow: hidden;
     padding: 0 40px;
 }
 
