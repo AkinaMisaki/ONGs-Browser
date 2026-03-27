@@ -34,7 +34,7 @@
 
             <label for="passCheck">Nova Senha:</label>
             <input type="password" id="new_passCheck" name="password" placeholder="Digite sua senha">
-
+            <strong>Lembre-se, sua senha deve ser composta por 8 caracteres, pelo menos 1 letra maiuscula, 1 minuscula e 1 número!</strong>
             <button type="button" onclick="realizarCadastroUsuario()">Cadastrar</button>
         </form>
     </main>

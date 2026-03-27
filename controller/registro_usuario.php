@@ -1,7 +1,7 @@
 <?php
 // Restringe para um unico ponto de entrada (controller) e define o tipo de resposta como JSON.
 header('Content-Type: application/json; charset=utf-8');
-
+//$checkSenha = ^[a-zA-Z0-9]{8}$;
 // Método para garantir que este arquivo só seja acessado via POST (quando o formulário for enviado) e não diretamente pela URL.
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
@@ -16,6 +16,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $nomeSeguro = htmlspecialchars($rawName, ENT_QUOTES, 'UTF-8');
     $nomeSeguro = htmlspecialchars($rawEmail, ENT_QUOTES, 'UTF-8');
     $senhaSegura = htmlspecialchars($rawSenha, ENT_QUOTES, 'UTF-8');
+    //if($senhaSegura fazer teste com checkSenha)
     $senhaCriptografada = password_hash($senhaSegura, PASSWORD_DEFAULT); // Criptografa a senha usando bcrypt
 
     // Após definir a criptografia para senha e o controle da senha ( se a senha segue os 5 principios, 8 digitos, maiuscula e minuscula, caracter especial e numero)
