@@ -239,3 +239,66 @@ body {
 .site-description strong {
     color: #0d47a1;
 }
+
+.search-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 0 50px 25px;
+}
+
+.search-container form {
+    display: flex;
+    width: 100%;
+    max-width: 800px;
+}
+
+.search-container input {
+    flex: 1;
+    padding: 18px 20px;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 10px 0 0 10px;
+    outline: none;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.search-container button {
+    padding: 0 25px;
+    font-size: 1.1rem;
+    border: none;
+    background: #0d47a1;
+    color: white;
+    cursor: pointer;
+    border-radius: 0 10px 10px 0;
+    transition: 0.3s;
+}
+
+.search-container button:hover {
+    background: #1565c0;
+}
+
+.search-container button {
+    padding: 0 25px;
+    font-size: 1.1rem;
+    border: none;
+    background: #0d47a1;
+    color: white;
+    cursor: pointer;
+    border-radius: 0 10px 10px 0;
+    transition: 0.3s;
+}
+
+.search-container button:hover {
+    background: #1565c0;
+}
+
+.home-button {
+    color: white;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.home-button:hover {
+    text-decoration: underline;
+}
