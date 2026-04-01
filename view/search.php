@@ -19,14 +19,17 @@ $ongs = searchONGs($query);
 
 <div class="search-container">
     <form id="searchForm">
-        <input type="text" id="searchInput" value="<?php echo htmlspecialchars($query); ?>"placeholder="Buscar ONGs..." required
-        >
+        <input type="text" id="searchInput" value="<?php echo htmlspecialchars($query); ?>" placeholder="Buscar ONGs...">
         <button type="submit">Buscar</button>
     </form>
 </div>
 
 <div class="search-info">
-    <p>Resultados para: <strong><?php echo '"' .htmlspecialchars($query) . '"'; echo " (" . htmlspecialchars(count($ongs)) . ")"; ?></strong></p>
+    <?php if ($query !== ''): ?>
+        <p>Resultados para: <strong>"<?php echo htmlspecialchars($query); ?>"</strong> (<?php echo count($ongs); ?>)</p>
+    <?php else: ?>
+        <p>Exibindo todas as ONGs (<?php echo count($ongs); ?>)</p>
+    <?php endif; ?>
 </div>
 
 <div class="results-grid">

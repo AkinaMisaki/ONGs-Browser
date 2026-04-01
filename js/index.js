@@ -74,7 +74,6 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
 
         const query = document.getElementById('searchInput').value.trim();
-        if (!query) return;
 
         const isInViewFolder = window.location.pathname.includes('/view/');
 
@@ -85,3 +84,8 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = path;
     });
 });
+
+// Navegar para página da ONG
+function goToONG(id) {
+    window.location.href = `ong.php?id=${id}`;
+}

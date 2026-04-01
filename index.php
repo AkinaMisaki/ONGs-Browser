@@ -31,7 +31,6 @@ $result = $conn->query($sql);
             type="text" 
             id="searchInput" 
             placeholder="Buscar ONGs..." 
-            required
         >
         <button type="submit">Buscar</button>
     </form>
