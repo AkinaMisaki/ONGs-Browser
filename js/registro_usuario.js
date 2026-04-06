@@ -13,6 +13,7 @@ async function realizarCadastroUsuario() {
 
     if (campoEmail === '') {
         alert('Atenção: Campo e-mail é obrigatório');
+        return;
     }
 
     if (campoSenha === '') {
