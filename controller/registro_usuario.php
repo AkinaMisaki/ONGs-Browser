@@ -21,8 +21,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         exit;
     }
     // Descobri que o htmlspecialchars pode quebrar a senha, por isso não vamos usar especifico para senha.
-    $senhaCriptografada = password_hash($rawSenha, PASSWORD_DEFAULT);
-
+   
+    // hash de senha nova Ass: gui
+    $options = [
+    'memory_cost' => 65536, 
+    'time_cost'   => 4,  
+    'threads'     => 2,   ];
+    $senhaCriptografada = password_hash($rawSenha, PASSWORD_ARGON2ID, $options);
+    
     // Valida se os campos não estão vazios
     if (!empty($rawUsuario) && !empty($rawEmail) && !empty($rawNome) && !empty($rawSenha)) {
         try {
