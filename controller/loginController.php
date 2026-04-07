@@ -1,6 +1,6 @@
 <?php
 
-include __DIR__ . '/../../../config/configuni.php';
+include __DIR__ . '/../config.php';
 
 // Restringe para um unico ponto de entrada (controller) e define o tipo de resposta como JSON.
 header('Content-Type: application/json; charset=utf-8');

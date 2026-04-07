@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../../../config/configuni.php';
+require_once __DIR__ . '/../config.php';
 
 function searchONGs($query) {
     global $conn;
