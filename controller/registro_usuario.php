@@ -1,6 +1,7 @@
 <?php
 // Restringe para um unico ponto de entrada (controller) e define o tipo de resposta como JSON.
 header('Content-Type: application/json; charset=utf-8');
+include __DIR__ . '/../config.php';
 
 // Método para garantir que este arquivo só seja acessado via POST
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
@@ -35,7 +36,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             // Gera o código e define o status
             $codigoVerificacao = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
             $statusConta = 'pendente'; 
-            $sql = "INSERT INTO usuarios (nome, email, usuario, senha, statusConta, codVerificador) VALUES (?, ?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO usuarios (nome_usuario, email, usuario_login, usuario_password, statusConta, codVerificador) VALUES (?, ?, ?, ?, ?, ?)";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param(
                 "ssssss", 
