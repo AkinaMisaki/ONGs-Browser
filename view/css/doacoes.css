@@ -1,0 +1,166 @@
+/* =========================================
+   Reset e Configurações Globais
+   ========================================= */
+   * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: #f4f4f9;
+    color: #333;
+    font-size: 1.2rem; 
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    padding-top: 80px;
+}
+
+.barra-fixa {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #0056b3;
+    padding: 1rem 2rem;
+    display: flex; 
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+nav button {
+    background-color: #004494;
+    color: white;
+    border: 1px solid #003370;
+    padding: 0.6rem 1.2rem;
+    margin: 0 0.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.3s;
+}
+
+nav button:hover {
+    background-color: #007bff;
+}
+
+main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+}  
+
+.container-doacao {
+    background-color: #ffffff;
+    padding: 2.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+.container-doacao h2 {
+    text-align: center;
+    color: #333;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    font-size: 1.4rem;
+}
+
+#display-nome-ong {
+    color: #0056b3;
+}
+
+.info-ong {
+    background-color: #e9ecef;
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    border-left: 4px solid #0056b3;
+}
+
+.info-ong p {
+    margin: 0;
+    color: #444;
+}
+
+.campo-form {
+    margin-bottom: 1.5rem;
+}
+
+.campo-form label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    color: #444;
+}
+
+.campo-form input[type="number"],
+.campo-form select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease;
+}
+
+.campo-form input[type="number"]:focus,
+.campo-form select:focus {
+    border-color: #0056b3;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 86, 179, 0.2);
+}
+
+.resultado-conversao {
+    background-color: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin: 2rem 0;
+    border: 1px solid #e2e6ea;
+    text-align: center;
+}
+
+.resultado-conversao p {
+    margin: 0;
+    color: #555;
+    font-size: 1.1rem;
+}
+
+#valor-convertido {
+    color: #28a745;
+    font-size: 2.5rem;
+    margin: 0.5rem 0;
+}
+
+#taxa-cotacao {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.btn-doar {
+    width: 100%;
+    padding: 14px;
+    background-color: #0056b3;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+}
+
+.btn-doar:hover {
+    background-color: #004494; /* Escurece no hover */
+}
+
+.btn-doar:active {
+    transform: scale(0.98); /* Dá um efeito de clique afundando levemente */
+}

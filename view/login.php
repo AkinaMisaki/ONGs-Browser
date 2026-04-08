@@ -4,18 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-    
-    <link rel="stylesheet" href="css/registro_usuario.css">
+    <link rel="stylesheet" href="css/login_usuario.css">
 </head>
 <body>
 
     <header class="barra-fixa">
-        <nav>
-            <button onclick="window.location.href='../index.php'">Início</button>
-            <button onclick="window.location.href='sobre.html'">Sobre</button>
-            <button onclick="window.location.href='contato.html'">Contato</button>
-        </nav>
-    </header>
+        </header>
 
     <main>
         <h1>Login de Usuário</h1>
@@ -27,12 +21,17 @@
             <label for="passCheck">Senha:</label>
             <input type="password" id="passCheck" name="password" placeholder="Digite sua senha">
 
+            <div class="opcoes-senha">
+                <a href="recuperar_senha.html" class="link-esqueceu">Esqueceu a senha?</a>
+            </div>
+
             <button type="button" onclick="realizarLogin()">Login</button>
-            <button><a href="recuperar_senha.html">esqueceu sua senha?</a></button>
         </form>
-        <a href="registrar.php">Novo por Aqui? Cadastre-se!</a>
+        
+        <div class="links-externos">
+            <a href="registrar.php">Novo por aqui? Cadastre-se!</a>
+        </div>
     </main>
 
-    <script src="../js/login.js"></script>
-</body>
+    <script src="../js/login_usuario.js"></script> </body>
 </html>

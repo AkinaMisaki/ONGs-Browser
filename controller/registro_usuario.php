@@ -48,6 +48,24 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $codigoVerificacao
             );
             $stmt->execute();
+
+            $linkAtivacao = "https://hanafuda.moe/universidade/controller/ativar_conta.php?email=" . urlencode($rawEmail) . "&codigo=" . $codigoVerificacao;
+            
+            $assuntoEmail = "Ative sua conta no ONGs Browser";
+            $corpoEmail = "
+                <div style='font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px; border-radius: 8px;'>
+                    <h2 style='color: #0056b3;'>Bem-vindo(a), $rawNome!</h2>
+                    <p>Obrigado por se cadastrar. Para liberar seu acesso, por favor clique no botão abaixo para confirmar seu e-mail:</p>
+                    <div style='text-align: center; margin: 30px 0;'>
+                        <a href='$linkAtivacao' style='background-color: #0056b3; color: #ffffff; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;'>
+                            Ativar Minha Conta
+                        </a>
+                    </div>
+                    <p>Ou copie e cole o código de verificação manualmente: <strong>$codigoVerificacao</strong></p>
+                </div>
+            ";
+
+            enviarEmailSistema($rawEmail, $assuntoEmail, $corpoEmail);
             
             $resposta = [
                 "sucesso" => true,

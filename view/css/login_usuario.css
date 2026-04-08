@@ -109,3 +109,39 @@ main a {
     font-size: 1rem;
 }
 
+/* --- Estilização dos Links no Login --- */
+.opcoes-senha {
+    text-align: right;
+    margin-top: -0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.link-esqueceu {
+    color: #a8d4ff;
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: color 0.3s ease;
+}
+
+.link-esqueceu:hover {
+    color: #ffffff;
+    text-decoration: underline;
+}
+
+.links-externos {
+    margin-top: 1.5rem;
+    text-align: center;
+}
+
+.links-externos a {
+    color: #007bff;
+    text-decoration: none;
+    font-size: 1.1rem;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+.links-externos a:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}

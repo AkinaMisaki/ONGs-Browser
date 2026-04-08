@@ -15,6 +15,18 @@ body {
     padding-top: 80px; 
 }
 
+.alerta-senha {
+    background-color: #f4f4f9; /* Fundo cinza bem clarinho (mesma cor do body para dar harmonia) */
+    color: #0056b3; /* A cor da fonte pega o mesmo azul do fundo do formulário */
+    border: 1px solid #cccccc; /* Borda fina e discreta */
+    padding: 0.8rem;
+    border-radius: 4px;
+    font-size: 0.9rem; /* Diminui a fonte como você pediu */
+    line-height: 1.4;
+    margin-top: -0.8rem; /* Puxa a caixinha um pouco para cima, deixando-a mais colada no input da senha */
+    text-align: center; /* Centraliza o texto para ficar mais organizado */
+}
+
 /* --- Barra Fixa no Topo --- */
 .barra-fixa {
     position: fixed; /* Prende o elemento na tela */
