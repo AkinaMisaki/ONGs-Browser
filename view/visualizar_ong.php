@@ -1,72 +1,54 @@
-<?php
-$host = '127.0.0.1';
-$user = 'root'; 
-$pass = 'root';     
-$db   = 'universidade';
+<?php 
+header('Content-Type: text/html; charset=utf-8');
+include '../conn/config.php'; //alterar pro caminho correto
 
-$conn = new mysqli($host, $user, $pass, $db);
+$id = ($_GET['id']) ?? null;
 
-if ($conn->connect_error) {
-    die("Falha na conexão com o banco local: " . $conn->connect_error);
-}
+if ($id > 0 ){
+    $sql = "SELECT nome_ong , descricao  FROM  ong WHERE id_ong = ?";
+    $stmt = $conn -> prepare($sql);
+    if($stmt){
+        $stmt -> bind_param("i" , $id);
+        $stmt ->execute();
+        $resultado = $stmt ->get_result();
 
-$conn->set_charset("utf8mb4");
-
-$ong  = null;
-$erro = null;
-
-$id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
-
-if (!$id || $id <= 0) {
-    $erro = "ID inválido ou não informado na URL (ex: ?id=1).";
-} else {
-    $stmt = $conn->prepare("SELECT nome_ong, descricao FROM ong WHERE id_ong = ?");
-    
-    if ($stmt) {
-        $stmt->bind_param("i", $id);
-        $stmt->execute();
-        
-        $result = $stmt->get_result();
-        $ong = $result->fetch_assoc(); 
-        
-        if (!$ong) {
-            $erro = "Nenhuma ONG encontrada com esse ID no seu banco local.";
+        if($linha = $resultado->fetch_assoc()){
+            $nome_ong = htmlspecialchars($linha['nome_ong'] , ENT_QUOTES , 'UTF-8' );
+            $descricao = htmlspecialchars($linha['descricao'] ,  ENT_QUOTES , 'UTF-8' );
+        } else{
+            echo "não há nada salvo neste id";
         }
         
-        $stmt->close();
-    } else {
-        error_log("Erro no prepare: " . $conn->error);
-        $erro = "Erro ao montar a consulta no banco de dados.";
+    }else{
+        echo "não foi possivel preparar a query";
+            $nome_ong = null;
+            $descricao = null;
     }
+} else{
+    echo "id nao especificado  corretamente , ex(?id=1)";
+    $nome_ong = null;
+    $descricao = null;
 }
 ?>
 
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Visualizar ONG</title>
-    <style>
-        body { font-family: sans-serif; background-color: #1a1a1a; color: #fff; padding: 20px; }
-        .error { color: #ff4c4c; font-weight: bold; }
-        pre { background: #333; padding: 10px; border-radius: 5px; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="css/login_usuario.css">
 </head>
 <body>
-    <h2>Teste Local - Visualizar ONG</h2>
-    
-    <?php 
-    if ($ong) {
-        echo "<pre>";
-        var_dump($ong);
-        echo "</pre>";
-    } 
-    ?>
-    
-    <?php 
-    if ($erro) {
-        echo "<p class='error'>$erro</p>";
-    } 
-    ?>
-</body>
+
+    <header class="barra-fixa">
+        </header>
+
+    <main>
+        <h1><?php echo $nome_ong;?></h1>
+        <h2><?php echo $descricao;?></h2>
+
+
+    </main>
+
 </html>
