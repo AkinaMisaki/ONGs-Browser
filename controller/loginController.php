@@ -1,5 +1,5 @@
 <?php
-
+$meurastro = [];
 include __DIR__ . '/../config.php';
 
 // Restringe para um unico ponto de entrada (controller) e define o tipo de resposta como JSON.
@@ -11,6 +11,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // Primeira sessão do processo de receber os dados e cuidar com eles (validação e segurança).
     $rawUsuario = (isset($_POST['usuario']) && is_string($_POST['usuario'])) ? trim($_POST['usuario']) : '';
     $rawSenha = (isset($_POST['senha']) && is_string($_POST['senha'])) ? trim($_POST['senha']) : '';
+    $meurastro[] = "Dados recebidos: usuario='$rawUsuario', senha='[PROTEGIDA]'";
 
     // Garante que os dados sejam tratados como strings e que espaços extras sejam removidos. Se não forem enviados, ficam vazios.
     $usuarioSeguro = htmlspecialchars($rawUsuario, ENT_QUOTES, 'UTF-8');
@@ -23,7 +24,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if (!empty($usuarioSeguro) && !empty($rawSenha)) {
         // Query para procurar um usuario
         $sql = "SELECT id_usuario, usuario_login, usuario_password 
-                FROM usuarios 
+                FROM usuario
                 WHERE usuario_login = ? 
                 LIMIT 1";
 
@@ -34,7 +35,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $result = $stmt->get_result();
         $usuario = $result->fetch_assoc();
 
-        if ($usuario && $rawSenha === $usuario['usuario_password']) {
+        $options = [
+        'memory_cost' => 65536, 
+        'time_cost'   => 4,  
+        'threads'     => 2,   ];
+        $senhaCriptografada = password_hash($rawSenha, PASSWORD_ARGON2ID, $options);
+
+        if ($usuario && password_verify($rawSenha, $usuario['usuario_password'])) {
 
             session_start();
             $_SESSION['usuario_id'] = $usuario['id_usuario'];

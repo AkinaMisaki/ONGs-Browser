@@ -31,6 +31,12 @@ async function realizarCadastroUsuario() {
     dadosFormulario.append('email', campoEmail);
     dadosFormulario.append('senha', campoSenha);
     dadosFormulario.append('nome', campoNome);
+    console.log('Dados do formulário empacotados:', {
+        usuario: campoUsuario,
+        email: campoEmail,
+        senha: campoSenha,
+        nome: campoNome
+    });
 
     try {
         const resposta = await fetch('../controller/registro_usuario.php', {

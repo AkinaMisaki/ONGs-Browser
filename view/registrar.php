@@ -32,7 +32,6 @@
             <label for="user_acess">Novo Usuário:</label>
             <input type="text" id="new_user_acess" name="userAcess" placeholder="Digite seu usuário">
 
-            <label for="passCheck">Nova Senha:</label>
             <label for="new_passCheck">Nova Senha:</label>
             <input type="password" id="new_passCheck" name="password" placeholder="Digite sua senha">
             <div class="alerta-senha">
@@ -42,6 +41,6 @@
         </form>
     </main>
 
-    <script src="../js/registro.js"></script>
+    <script src="../js/registro_usuario.js"></script>
 </body>
 </html>

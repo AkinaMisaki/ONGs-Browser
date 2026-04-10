@@ -18,6 +18,10 @@ async function realizarLogin() {
     const dadosFormulario = new FormData();
     dadosFormulario.append('usuario', campoUsuario);
     dadosFormulario.append('senha', campoSenha);
+    console.log('Dados do formulário:', {
+        usuario: campoUsuario,
+        senha: campoSenha
+    }); // Log para depuração
 
     try {
         const resposta = await fetch('../controller/loginController.php', {
