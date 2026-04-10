@@ -56,9 +56,12 @@ if (strtotime($user['reset_expire']) < time()) {
     exit;
 }
 
-// Criptografa Senha e Atualiza no BD
-$options = ['memory_cost' => 65536, 'time_cost' => 4, 'threads' => 2];
-$newPassword = password_hash($rawSenha, PASSWORD_ARGON2ID, $options);
+// Atualiza Senha
+$options = [
+    'memory_cost' => 65536, 
+    'time_cost'   => 4,  
+    'threads'     => 2,   ];
+$newPassword = password_hash($password, PASSWORD_ARGON2ID, $options);
 $stmt = $conn->prepare("
     UPDATE usuario
     SET usuario_password = ?, reset_token = NULL, reset_expire = NULL
