@@ -1,6 +1,6 @@
 //Mudar para o link de view
 function goToONG(id) {
-    window.location.href = `ong.php?id=${id}`;
+    window.location.href = `visualizar_ong.php?id=${id}`;
 }
 
 // Script para lidar com a barra de pesquisa na página de resultados
