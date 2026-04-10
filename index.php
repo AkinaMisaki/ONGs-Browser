@@ -47,9 +47,9 @@ $result = $conn->query($sql);
                 echo "<div class='card' style='animation-delay: {$delay}s'>";
                 echo "<h2>" . htmlspecialchars($row['nome_ong']) . "</h2>";
                 echo "<p>" . htmlspecialchars($row['descricao']) . "</p>";
-                echo "<button>Ver mais</button>";
+                echo "<button onclick=\"goToONG(" . $row['id_ong'] . ")\">Ver mais</button>";
                 echo "</div>";
-
+                
                 $delay += 0.1;
             }
         } else {

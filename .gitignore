@@ -2,3 +2,4 @@ libs/
 LICENSE
 README.md
 .env
+generate_hash.php

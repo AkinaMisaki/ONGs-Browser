@@ -87,5 +87,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Navegar para página da ONG
 function goToONG(id) {
-    window.location.href = `ong.php?id=${id}`;
+    window.location.href = `view/visualizar_ong.php?id=${id}`;
 }
