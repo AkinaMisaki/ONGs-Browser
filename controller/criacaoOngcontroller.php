@@ -13,7 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if (!is_dir($diretorioDestino)) {
         mkdir($diretorioDestino, 0775, true);
     }
-
+    
     if (!empty($rawOng) && !empty($rawSigla) && !empty($rawDescricao) && isset($_FILES['imagemOng'])) {
         
         $arquivo = $_FILES['imagemOng'];

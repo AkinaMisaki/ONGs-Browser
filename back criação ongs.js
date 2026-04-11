@@ -85,7 +85,7 @@ async function realizarCadastroUsuario() {
         if (!resposta.ok) throw new Error('Erro na rede');
 
         const resultado = await resposta.json();
-
+        
         if (resultado.sucesso) {
             alert(resultado.mensagem);
             form.reset();
