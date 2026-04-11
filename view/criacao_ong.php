@@ -27,11 +27,14 @@
             <label for="SiglaOng">Sigla da Ong:</label>
             <input type="text" id="SiglaOng" name="SiglaOng" placeholder="Digite a sigla da Ong">
 
-            <label for="descricao">Descriçao da Ong</label>
-            <input type="text" id="descricaoOng" name="descricaoOng" placeholder="Escreva uma descrição">
-
+            <label for="descricao">Descrição da Ong</label>
+            <textarea id="descricaoOng" name="descricaoOng" placeholder="Escreva uma descrição" rows="4"></textarea>
+            
             <label for="imagemOng">Imagem da Ong</label>
-            <input type="file" accept="image/jpeg, image/png" id="imagemOng" name="imagemOng" placeholder="arraste ou baixe uma imagem aqui">
+            <div id="drop-zone" class="drop-zone">
+                 <span>Arraste sua imagem aqui</span>
+                 <input type="file" id="imagemOng" name="imagemOng" hidden>
+            </div>
 
             <button type="button" onclick="realizarLogin()">Registrar Ong</button>
             <button><a href=""></a></button>
