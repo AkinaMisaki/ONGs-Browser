@@ -1,8 +1,9 @@
+// 1. LÓGICA DO DRAG & DROP
 const dropZone = document.getElementById('drop-zone');
 const fileInput = document.getElementById('imagemOng');
-//imagem
-if (dropZone && fileInput) {
+const form = document.getElementById('formContato'); // Certifique-se que o ID do <form> é este
 
+if (dropZone && fileInput) {
     dropZone.onclick = () => fileInput.click();
 
     dropZone.ondragover = (e) => {
@@ -18,28 +19,54 @@ if (dropZone && fileInput) {
 
         const files = e.dataTransfer.files;
         if (files.length > 0) {
-            fileInput.files = files; // Vincula o arquivo ao input
-            dropZone.querySelector('span').innerText = `Arquivo: ${files[0].name}`;
+            validarEAtribuirArquivo(files[0]);
         }
     };
 
     fileInput.onchange = () => {
         if (fileInput.files.length > 0) {
-            dropZone.querySelector('span').innerText = `Arquivo: ${fileInput.files[0].name}`;
+            validarEAtribuirArquivo(fileInput.files[0]);
         }
     };
 }
-//cadastro
+
+// Função auxiliar para validar se o arquivo é imagem e atualizar a interface
+function validarEAtribuirArquivo(arquivo) {
+    const tiposPermitidos = ['image/jpeg', 'image/png', 'image/webp'];
+    
+    if (!tiposPermitidos.includes(arquivo.type)) {
+        alert("Por favor, selecione apenas imagens (JPG, PNG ou WebP).");
+        fileInput.value = ""; // Limpa o input
+        return;
+    }
+
+    // Vincula o arquivo ao input (necessário para o ondrop)
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(arquivo);
+    fileInput.files = dataTransfer.files;
+
+    dropZone.querySelector('span').innerText = `Arquivo: ${arquivo.name}`;
+}
+
+// --- 2. FUNÇÃO DE ENVIO ---
+
+// É melhor usar o evento 'submit' do formulário do que um clique no botão
+if (form) {
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault(); // Impede o recarregamento da página
+        await realizarCadastroUsuario();
+    });
+}
 
 async function realizarCadastroUsuario() {
     const campoOng = document.getElementById('nomeOng').value.trim();
     const campoSigla = document.getElementById('SiglaOng').value.trim();
     const campoDescricao = document.getElementById('descricaoOng').value.trim();
-    const arquivoImagem = fileInput.files[0]; // Pega o arquivo que está no input
+    const arquivoImagem = fileInput.files[0];
 
-
-    if (campoOng === '' || campoSigla === '' || campoDescricao === '') {
-        alert('Atenção: Todos os campos de texto são obrigatórios!');
+    // Validação básica no Front-end
+    if (!campoOng || !campoSigla || !campoDescricao || !arquivoImagem) {
+        alert('Por favor, preencha todos os campos e selecione uma imagem.');
         return;
     }
 
@@ -47,10 +74,7 @@ async function realizarCadastroUsuario() {
     dadosFormulario.append('Ong', campoOng);
     dadosFormulario.append('Sigla', campoSigla);
     dadosFormulario.append('Descricao', campoDescricao);
-    
-    if (arquivoImagem) {
-        dadosFormulario.append('imagemOng', arquivoImagem);
-    }
+    dadosFormulario.append('imagemOng', arquivoImagem);
 
     try {
         const resposta = await fetch('controller/criacaoOng.php', {
@@ -58,18 +82,21 @@ async function realizarCadastroUsuario() {
             body: dadosFormulario
         });
 
+        // Verifica se a resposta do servidor é válida (JSON)
+        if (!resposta.ok) throw new Error('Erro na rede');
+
         const resultado = await resposta.json();
 
         if (resultado.sucesso) {
             alert(resultado.mensagem);
-            document.getElementById('formContato').reset();
-            dropZone.querySelector('span').innerText = "Arraste sua imagem aqui"; // Reseta o texto da zona
+            form.reset();
+            dropZone.querySelector('span').innerText = "Arraste sua imagem aqui";
         } else {
-            alert('Erro no Cadastro:\n' + resultado.mensagem);
+            alert('Erro: ' + resultado.mensagem);
         }
 
     } catch (erro) {
-        alert('Erro crítico: Falha de comunicação com o servidor.');
-        console.error(erro);
+        alert('Erro crítico: Não foi possível conectar ao servidor.');
+        console.error("Detalhes do erro:", erro);
     }
 }
