@@ -1,3 +1,17 @@
+function alternarBotaoOrganizador() {
+    const checkbox = document.getElementById('termoConsentimento');
+    const botao = document.getElementById('btnOrganizador');
+
+    if (checkbox.checked) {
+        botao.disabled = false;
+        botao.style.opacity = '1';
+        botao.style.cursor = 'pointer';
+    } else {
+        botao.disabled = true;
+        botao.style.opacity = '0.5';
+        botao.style.cursor = 'not-allowed';
+    }
+}
 async function atualizarCredenciais() {
     const usuario = document.getElementById('novoUsuario').value.trim();
     const senha = document.getElementById('novaSenha').value.trim();
@@ -14,14 +28,19 @@ async function atualizarCredenciais() {
 
     enviarParaServidor(dados);
 }
-
 async function virarOrganizador() {
     const cpf = document.getElementById('cpf').value.trim();
     const rg = document.getElementById('rg').value.trim();
     const telefone = document.getElementById('telefone').value.trim();
+    const consentimento = document.getElementById('termoConsentimento').checked;
+
+    if (!consentimento) {
+        alert("Você precisa consentir com o uso dos dados para continuar.");
+        return;
+    }
 
     if (cpf === '' || rg === '' || telefone === '') {
-        alert("Para virar organizador, você deve preencher CPF, RG e Telefone.");
+        alert("Preencha todos os campos (CPF, RG e Telefone).");
         return;
     }
 
@@ -33,6 +52,33 @@ async function virarOrganizador() {
 
     enviarParaServidor(dados, true);
 }
+async function confirmarExclusao() {
+    const aviso = "ATENÇÃO: EXCLUSÃO DE CONTA\n\n" +
+                  "Você está prestes a apagar sua conta permanentemente.\n" +
+                  "Tem certeza absoluta que deseja prosseguir?";
+
+    if (confirm(aviso)) {
+        const dados = new FormData();
+        dados.append('action', 'excluir_conta');
+
+        try {
+            const resposta = await fetch('../controller/gerenciar_controller.php', {
+                method: 'POST',
+                body: dados
+            });
+            const resultado = await resposta.json();
+
+            if (resultado.sucesso) {
+                alert(resultado.mensagem);
+                window.location.href = '../index.php';
+            } else {
+                alert("Erro: " + resultado.mensagem);
+            }
+        } catch (erro) {
+            alert("Erro na comunicação com o servidor.");
+        }
+    }
+}
 async function enviarParaServidor(dadosFormulario, recarregar = false) {
     try {
         const resposta = await fetch('../controller/gerenciar_controller.php', {
@@ -43,9 +89,9 @@ async function enviarParaServidor(dadosFormulario, recarregar = false) {
 
         alert(resultado.mensagem);
         if (resultado.sucesso && recarregar) {
-            window.location.reload();
+            window.location.reload(); 
         }
     } catch (erro) {
-        alert("Erro ao comunicar com o servidor.");
+        alert("Erro na requisição.");
     }
 }
