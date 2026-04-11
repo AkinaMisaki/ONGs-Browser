@@ -10,6 +10,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     // Primeira sessão do processo de receber os dados e cuidar com eles (validação e segurança).
     $rawUsuario = (isset($_POST['usuario']) && is_string($_POST['usuario'])) ? trim($_POST['usuario']) : '';
+
+
+
     $rawSenha = (isset($_POST['senha']) && is_string($_POST['senha'])) ? trim($_POST['senha']) : '';
     $meurastro[] = "Dados recebidos: usuario='$rawUsuario', senha='[PROTEGIDA]'";
 
@@ -23,7 +26,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // Implementar a tratativa de conexão com o banco de dados para puxar as credencias do usuário mandando o usuário, retornando a senha criptografada do banco, e comparar com a senha enviada pelo usuário usando password_verify() para validar o login.
     if (!empty($usuarioSeguro) && !empty($rawSenha)) {
         // Query para procurar um usuario
-        $sql = "SELECT id_usuario, usuario_login, usuario_password 
+        $sql = "SELECT id_usuario, usuario_login, usuario_password, statusCheck
                 FROM usuario
                 WHERE usuario_login = ? 
                 LIMIT 1";
@@ -32,7 +35,29 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $stmt->bind_param("s", $usuarioSeguro);
         $stmt->execute();
 
+        if($stmt->error) {
+            echo json_encode([
+                "sucesso" => false,
+                "mensagem" => "Erro ao buscar usuário."
+            ]);
+            exit;
+        }
+        if ($stmt->affected_rows === 0) {
+            echo json_encode([
+                "sucesso" => false,
+                "mensagem" => "Usuário ou senha incorretos."
+            ]);
+            exit;
+        }
+
         $result = $stmt->get_result();
+        if ($result['statusCheck'] < 0) {
+            echo json_encode([
+                "sucesso" => false,
+                "mensagem" => "Usuário inativo. Confirme seu email antes de continuar."
+            ]);
+            exit;
+        }
         $usuario = $result->fetch_assoc();
 
         $options = [
