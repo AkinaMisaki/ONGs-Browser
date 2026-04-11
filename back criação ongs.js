@@ -1,7 +1,7 @@
-// 1. LÓGICA DO DRAG & DROP
+//  LÓGICA DO DRAG & DROP
 const dropZone = document.getElementById('drop-zone');
 const fileInput = document.getElementById('imagemOng');
-const form = document.getElementById('formContato'); // Certifique-se que o ID do <form> é este
+const form = document.getElementById('formContato');
 
 if (dropZone && fileInput) {
     dropZone.onclick = () => fileInput.click();
@@ -30,7 +30,6 @@ if (dropZone && fileInput) {
     };
 }
 
-// Função auxiliar para validar se o arquivo é imagem e atualizar a interface
 function validarEAtribuirArquivo(arquivo) {
     const tiposPermitidos = ['image/jpeg', 'image/png', 'image/webp'];
     
@@ -40,7 +39,7 @@ function validarEAtribuirArquivo(arquivo) {
         return;
     }
 
-    // Vincula o arquivo ao input (necessário para o ondrop)
+
     const dataTransfer = new DataTransfer();
     dataTransfer.items.add(arquivo);
     fileInput.files = dataTransfer.files;
@@ -48,12 +47,12 @@ function validarEAtribuirArquivo(arquivo) {
     dropZone.querySelector('span').innerText = `Arquivo: ${arquivo.name}`;
 }
 
-// --- 2. FUNÇÃO DE ENVIO ---
+// FUNÇÃO DE ENVIO 
 
-// É melhor usar o evento 'submit' do formulário do que um clique no botão
+
 if (form) {
     form.addEventListener('submit', async (e) => {
-        e.preventDefault(); // Impede o recarregamento da página
+        e.preventDefault(); 
         await realizarCadastroUsuario();
     });
 }
@@ -64,7 +63,7 @@ async function realizarCadastroUsuario() {
     const campoDescricao = document.getElementById('descricaoOng').value.trim();
     const arquivoImagem = fileInput.files[0];
 
-    // Validação básica no Front-end
+    // Validação
     if (!campoOng || !campoSigla || !campoDescricao || !arquivoImagem) {
         alert('Por favor, preencha todos os campos e selecione uma imagem.');
         return;
@@ -82,7 +81,7 @@ async function realizarCadastroUsuario() {
             body: dadosFormulario
         });
 
-        // Verifica se a resposta do servidor é válida (JSON)
+        
         if (!resposta.ok) throw new Error('Erro na rede');
 
         const resultado = await resposta.json();
