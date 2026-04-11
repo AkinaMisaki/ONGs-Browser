@@ -36,8 +36,8 @@
                  <input type="file" id="imagemOng" name="imagemOng" hidden>
             </div>
 
-            <button type="button" onclick="realizarLogin()">Registrar Ong</button>
-            <button><a href=""></a></button>
+            <button type="button">Registrar Ong</button>
+
         </form>
         <a href="registrar.php">Novo por Aqui? Cadastre-se!</a>
     </main>
