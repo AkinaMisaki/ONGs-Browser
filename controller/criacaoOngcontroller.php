@@ -18,12 +18,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $arquivo = $_FILES['imagemOng'];
 
         if ($arquivo['error'] === UPLOAD_ERR_OK)
-            $extensao = pathinfo($arquivo['name'], PATHINFO_EXTENSION);
+            $extensao = $arquivo['name'];
             $novoNome = uniqid() . "." . $extensao; 
             $caminhoCompleto = $diretorioDestino . $novoNome;
             $caminhoBanco = '/universidade/uploads/' . $novoNome; 
 
-            if (move_uploaded_file($arquivo['tmp_name'], $caminhoCompleto)) {
+            if (move_uploaded_file($arquivo['tmp_name'], $diretorioDestino. $arquivo['name'])) {
                 try {
                     $sql = "INSERT INTO ong (nome_ong, descricao, caminho_arquivo) VALUES (?, ?, ?, ?)";
                     $stmt = $conn->prepare($sql);
