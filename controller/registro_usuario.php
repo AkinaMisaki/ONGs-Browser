@@ -40,7 +40,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         try {
             // Gera o código e define o status
             $codigoVerificacao = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-            $statusConta = 'pendente'; 
+            $statusConta = 0; 
             $meurastro[] = "Código de verificação gerado: $codigoVerificacao.";
             $sql = "INSERT INTO usuario (nome_usuario, email, usuario_login, usuario_password, statusConta, codVerificador) VALUES (?, ?, ?, ?, ?, ?)";
             $stmt = $conn->prepare($sql);
