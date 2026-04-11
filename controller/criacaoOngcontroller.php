@@ -5,16 +5,15 @@ include __DIR__ . '/../config.php';
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     $rawOng = (isset($_POST['Ong']) && is_string($_POST['Ong'])) ? trim($_POST['Ong']) : '';
-    $rawSigla = (isset($_POST['Sigla']) && is_string($_POST['Sigla'])) ? trim($_POST['Sigla']) : '';
     $rawDescricao = (isset($_POST['Descricao']) && is_string($_POST['Descricao'])) ? trim($_POST['Descricao']) : '';
 
     $diretorioDestino = __DIR__ . '/../uploads/'; 
     
     if (!is_dir($diretorioDestino)) {
-        mkdir($diretorioDestino, 0775, true);
+        mkdir($diretorioDestino, 0755, true);
     }
     
-    if (!empty($rawOng) && !empty($rawSigla) && !empty($rawDescricao) && isset($_FILES['imagemOng'])) {
+    if (!empty($rawOng) && !empty($rawDescricao) && isset($_FILES['imagemOng'])) {
         
         $arquivo = $_FILES['imagemOng'];
 
@@ -22,16 +21,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $extensao = pathinfo($arquivo['name'], PATHINFO_EXTENSION);
             $novoNome = uniqid() . "." . $extensao; 
             $caminhoCompleto = $diretorioDestino . $novoNome;
-            $caminhoBanco = "uploads/" . $novoNome; 
+            $caminhoBanco = '/universidade/uploads/' . $novoNome; 
 
             if (move_uploaded_file($arquivo['tmp_name'], $caminhoCompleto)) {
                 try {
-                    $sql = "INSERT INTO CriacaoOng (nome_Ong, Sigla_Ong, Descricao_Ong, caminho_arquivo) VALUES (?, ?, ?, ?)";
+                    $sql = "INSERT INTO ong (nome_ong, descricao, caminho_arquivo) VALUES (?, ?, ?, ?)";
                     $stmt = $conn->prepare($sql);
                     $stmt->bind_param(
                         "ssss", 
                         $rawOng, 
-                        $rawSigla, 
                         $rawDescricao, 
                         $caminhoBanco
                     );
@@ -41,7 +39,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 } catch (mysqli_sql_exception $e) {
                     unlink($caminhoCompleto);
                     if ($e->getCode() == 1062) {
-                        $resposta = ["sucesso" => false, "mensagem" => "Erro: Nome ou Sigla já cadastrados."];
+                        $resposta = ["sucesso" => false, "mensagem" => "Erro: Nome já cadastrados."];
                     } else {
                         $resposta = ["sucesso" => false, "mensagem" => "Erro no banco de dados."];
                     }

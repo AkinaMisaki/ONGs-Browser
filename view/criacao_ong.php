@@ -24,9 +24,6 @@
             <label for="NomeOng">Nome da Ong</label>
             <input type="text" id="nomeOng" name="Nome_Ong" placeholder="Digite o nome da Ong">
 
-            <label for="SiglaOng">Sigla da Ong:</label>
-            <input type="text" id="SiglaOng" name="SiglaOng" placeholder="Digite a sigla da Ong">
-
             <label for="descricao">Descrição da Ong</label>
             <textarea id="descricaoOng" name="descricaoOng" placeholder="Escreva uma descrição" rows="4"></textarea>
             
@@ -42,6 +39,6 @@
         <a href="registrar.php">Novo por Aqui? Cadastre-se!</a>
     </main>
 
-    <script src="index.js"></script>
+    <script src="../js/criacao_ong.js"></script>
 </body>
 </html>

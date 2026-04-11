@@ -59,19 +59,17 @@ if (form) {
 
 async function realizarCadastroUsuario() {
     const campoOng = document.getElementById('nomeOng').value.trim();
-    const campoSigla = document.getElementById('SiglaOng').value.trim();
     const campoDescricao = document.getElementById('descricaoOng').value.trim();
     const arquivoImagem = fileInput.files[0];
 
     // Validação
-    if (!campoOng || !campoSigla || !campoDescricao || !arquivoImagem) {
+    if (!campoOng || !campoDescricao || !arquivoImagem) {
         alert('Por favor, preencha todos os campos e selecione uma imagem.');
         return;
     }
 
     const dadosFormulario = new FormData();
     dadosFormulario.append('Ong', campoOng);
-    dadosFormulario.append('Sigla', campoSigla);
     dadosFormulario.append('Descricao', campoDescricao);
     dadosFormulario.append('imagemOng', arquivoImagem);
 
