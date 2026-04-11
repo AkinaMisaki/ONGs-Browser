@@ -1,80 +1,130 @@
 <?php
 session_start();
-include __DIR__ . '/../config.php';
 
 if (!isset($_SESSION['usuario_id'])) {
-    header("Location: login.php");
+    header('Location: /universidade/view/login.php');
     exit;
 }
 
-$id_usuario = $_SESSION['usuario_id'];
+include __DIR__ . '/../config.php';
 
-// Busca os dados atualizados do usuário
-$sql = "SELECT usuario_login, statusConta FROM usuario WHERE id_usuario = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $id_usuario);
+$stmt = $conn->prepare("SELECT nome_usuario, email, usuario_login FROM usuario WHERE id_usuario = ?");
+$stmt->bind_param("i", $_SESSION['usuario_id']);
 $stmt->execute();
-$user = $stmt->get_result()->fetch_assoc();
+$result = $stmt->get_result();
 
-if ($user['statusConta'] === 'pendente') {
-    die("<div style='text-align:center; margin-top:50px; font-family:Arial;'>
-            <h2>Acesso Negado</h2>
-            <p>Sua conta ainda não está ativada. Por favor, verifique seu e-mail e ative sua conta primeiro.</p>
-            <a href='login.php'>Voltar</a>
-         </div>");
+if ($result->num_rows !== 1) {
+    session_destroy();
+    header('Location: /universidade/view/login.php');
+    exit;
 }
+
+$usuario = $result->fetch_assoc();
+$stmt->close();
+$conn->close();
+
+$_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerenciar Conta</title>
-    <link rel="stylesheet" href="css/login_usuario.css">
+    <link rel="stylesheet" href="css/gerenciar_conta.css">
 </head>
 <body>
-    <header class="barra-fixa">
+
+    <div class="barra-fixa">
+        <span>Gerenciar Conta</span>
         <nav>
-            <button onclick="window.location.href='../index.php'">Início</button>
-            <button onclick="window.location.href='../controller/logout.php'" style="background: #dc3545; border-color: #c82333;">Sair</button>
+            <button onclick="window.location.href='/universidade/index.php'">Início</button>
+            <button onclick="realizarLogout()" class="btn-logout">Sair</button>
         </nav>
-    </header>
+    </div>
 
     <main>
-        <h1>Painel de Controle</h1>
-        <p style="margin-bottom: 20px;">
-            Olá, <strong><?= htmlspecialchars($user['usuario_login']) ?></strong>! 
-            Status: <span style="color: #28a745; text-transform: uppercase;"><?= htmlspecialchars($user['statusConta']) ?></span>
-        </p>
+        <h1>Minha Conta</h1>
 
-        <form id="formCredenciais" style="margin-bottom: 30px;">
-            <h3 style="margin-bottom: 15px;">Alterar Dados de Acesso</h3>
-            
-            <label>Nome de Usuário:</label>
-            <input type="text" id="novoUsuario" value="<?= htmlspecialchars($user['usuario_login']) ?>">
-            
-            <label>Nova Senha (deixe em branco para manter a atual):</label>
-            <input type="password" id="novaSenha" placeholder="Digite a nova senha">
-            
-            <button type="button" onclick="atualizarCredenciais()">Salvar Alterações</button>
-        </form>
+        <div id="mensagem-global" class="mensagem-global hidden"></div>
 
-        <?php if ($user['statusConta'] === 'ativo'): ?>
-        <form id="formOrganizador" style="background-color: #e9ecef; border-color: #adb5bd;">
-            <h3 style="color: #0056b3; margin-bottom: 10px;">Deseja ser um Organizador?</h3>
-            <p style="font-size: 0.9rem; color: #555; margin-bottom: 15px;">Forneça os dados abaixo para liberar a criação de ONGs.</p>
-            
-            <label>CPF:</label>
-            <input type="text" id="cpf" placeholder="000.000.000-00">
-            
-            <label>RG:</label>
-            <input type="text" id="rg" placeholder="00.000.000-0">
-            
-            <label>Telefone:</label>
-            <input type="text" id="telefone" placeholder="(00) 00000-0000">
+        <!-- Informações atuais -->
+        <section class="card card-info">
+            <h2>Suas Informações</h2>
+            <ul class="info-lista">
+                <li><span class="info-label">Nome:</span> <span id="nome-atual"><?= htmlspecialchars($usuario['nome_usuario']) ?></span></li>
+                <li><span class="info-label">Usuário:</span> <?= htmlspecialchars($usuario['usuario_login']) ?></li>
+                <li><span class="info-label">E-mail:</span> <?= htmlspecialchars($usuario['email']) ?></li>
+            </ul>
+        </section>
 
-            <button type="button" onclick="virarOrganizador()" style="background-color: #0056b3;">Solicitar Acesso de Organizador</button>
-        </form>
-        <?php endif; ?>
+        <!-- Alterar Nome -->
+        <section class="card">
+            <h2>Alterar Nome</h2>
+            <form id="formAlterarNome">
+                <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                <input type="hidden" name="acao" value="alterar_nome">
+                <label for="novo_nome">Novo Nome</label>
+                <input type="text" id="novo_nome" name="novo_nome" placeholder="Digite seu novo nome" required>
+                <button type="submit">Salvar Nome</button>
+            </form>
+        </section>
+
+        <!-- Alterar Senha -->
+        <section class="card">
+            <h2>Alterar Senha</h2>
+            <form id="formAlterarSenha">
+                <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                <input type="hidden" name="acao" value="alterar_senha">
+                <label for="senha_atual">Senha Atual</label>
+                <input type="password" id="senha_atual" name="senha_atual" placeholder="Digite sua senha atual" required autocomplete="current-password">
+                <label for="nova_senha">Nova Senha</label>
+                <input type="password" id="nova_senha" name="nova_senha" placeholder="Mínimo 8 caracteres" required autocomplete="new-password">
+                <label for="confirmar_senha">Confirmar Nova Senha</label>
+                <input type="password" id="confirmar_senha" name="confirmar_senha" placeholder="Repita a nova senha" required autocomplete="new-password">
+                <div class="alerta-senha">
+                    A senha deve ter no mínimo 8 caracteres, incluindo letras maiúsculas, minúsculas, números e pelo menos um caractere especial (!, @, #, etc).
+                </div>
+                <button type="submit">Alterar Senha</button>
+            </form>
+        </section>
+
+        <!-- LGPD - Exportar Dados -->
+        <section class="card card-lgpd">
+            <h2>Exportar Meus Dados</h2>
+            <p class="lgpd-descricao">
+                Em conformidade com a <strong>Lei Geral de Proteção de Dados (LGPD — Lei nº 13.709/2018)</strong>,
+                Art. 18, você tem o direito de acessar e obter uma cópia dos seus dados pessoais armazenados
+                em nossa plataforma.
+            </p>
+            <form id="formExportarDados">
+                <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                <input type="hidden" name="acao" value="exportar_dados">
+                <button type="submit" class="btn-lgpd">Baixar Meus Dados</button>
+            </form>
+        </section>
+
+        <!-- LGPD - Deletar Conta -->
+        <section class="card card-perigo">
+            <h2>Excluir Minha Conta</h2>
+            <p class="lgpd-descricao">
+                Em conformidade com a <strong>LGPD, Art. 18</strong>, você tem o direito de solicitar a
+                exclusão dos seus dados pessoais. Essa ação é <strong>irreversível</strong>: sua conta,
+                dados cadastrais e histórico serão permanentemente removidos.
+            </p>
+            <form id="formDeletarConta">
+                <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                <input type="hidden" name="acao" value="deletar_conta">
+                <label for="senha_delecao">Confirme sua Senha</label>
+                <input type="password" id="senha_delecao" name="senha_delecao" placeholder="Digite sua senha para confirmar" required autocomplete="current-password">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="confirmar_delecao" required>
+                    Entendo que esta ação é irreversível e que todos os meus dados serão excluídos.
+                </label>
+                <button type="submit" class="btn-perigo">Excluir Minha Conta</button>
+            </form>
+        </section>
+
     </main>
 
     <script src="../js/gerenciar_conta.js"></script>
