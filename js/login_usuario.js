@@ -40,6 +40,6 @@ async function realizarLogin() {
         }
 
     } catch (erro) {
-        alert('Erro crítico: Falha de comunicação com o servidor.');
+        alert('Erro crítico: Falha de comunicação com o servidor.' + erro);
     }
 }

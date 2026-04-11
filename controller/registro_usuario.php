@@ -13,7 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $rawEmail = (isset($_POST['email']) && is_string($_POST['email'])) ? trim($_POST['email']) : '';
     $rawUsuario = (isset($_POST['usuario']) && is_string($_POST['usuario'])) ? trim($_POST['usuario']) : '';
     $rawSenha = (isset($_POST['senha']) && is_string($_POST['senha'])) ? trim($_POST['senha']) : '';
-    $meurastro[] = "Dados recebidos: nome='$rawNome', email='$rawEmail', usuario='$rawUsuario', senha='[PROTEGIDA]'";
+    $meurastro[] = "Dados recebidos: nome='" . $rawNome . "', email='" . $rawEmail . "', usuario='" . $rawUsuario . "', senha='[PROTEGIDA]'";
 
     // Aplicando a Validação Regex aprendido em aula e verificado usando a ajuda da internet e ia como se valida no php o regEx
     $padraoSenha = '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/';
@@ -30,7 +30,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $options = [
     'memory_cost' => 65536, 
     'time_cost'   => 4,  
-    'threads'     => 2,   ];
+    'threads'     => 2
+    ];
     $senhaCriptografada = password_hash($rawSenha, PASSWORD_ARGON2ID, $options);
     $meurastro[] = "Senha criptografada com sucesso, $senhaCriptografada.";
 
@@ -54,27 +55,28 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             );
             $stmt->execute();
 
-            // $linkAtivacao = "https://hanafuda.moe/universidade/controller/ativar_conta.php?email=" . urlencode($rawEmail) . "&codigo=" . $codigoVerificacao;
+            // $protocolo = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
+            // $dominio = $_SERVER['HTTP_HOST'];
+            // // Link aponta para a nova página passando o e-mail
+            // $linkAtivacao = "$protocolo://$dominio/Experiencia Criativa/view/ativar_conta.php?email=" . urlencode($rawEmail);
             
             // $assuntoEmail = "Ative sua conta no ONGs Browser";
             // $corpoEmail = "
             //     <div style='font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px; border-radius: 8px;'>
             //         <h2 style='color: #0056b3;'>Bem-vindo(a), $rawNome!</h2>
-            //         <p>Obrigado por se cadastrar. Para liberar seu acesso, por favor clique no botão abaixo para confirmar seu e-mail:</p>
+            //         <p>Obrigado por se cadastrar. Para liberar seu acesso, precisamos confirmar seu e-mail.</p>
+            //         <p>Seu código de verificação é: <strong style='font-size: 1.5rem; letter-spacing: 2px; color: #28a745;'>$codigoVerificacao</strong></p>
             //         <div style='text-align: center; margin: 30px 0;'>
             //             <a href='$linkAtivacao' style='background-color: #0056b3; color: #ffffff; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;'>
-            //                 Ativar Minha Conta
+            //                 Acessar Página de Ativação
             //             </a>
             //         </div>
-            //         <p>Ou copie e cole o código de verificação manualmente: <strong>$codigoVerificacao</strong></p>
             //     </div>
             // ";
-
-            // enviarEmailSistema($rawEmail, $assuntoEmail, $corpoEmail);
             
             $resposta = [
                 "sucesso" => true,
-                "mensagem" => "Cadastro realizado com sucesso! Verifique seu e-mail para ativar a conta."
+                "mensagem" => "Cadastro realizado com sucesso! Verifique seu e-mail para ativar a conta.",
                 "debug" => $meurastro
             ];
         } catch (mysqli_sql_exception $e) {
@@ -88,7 +90,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     } else {
         $resposta = [
             "sucesso" => false,
-            "mensagem" => "Dados inválidos. Preencha todos os campos corretamente."
+            "mensagem" => "Dados inválidos. Preencha todos os campos corretamente.",
             "debug" => $meurastro
         ];
     }

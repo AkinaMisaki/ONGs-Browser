@@ -70,7 +70,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // Se alguém tentar acessar digitando direto na URL (método GET), será bloqueado e receberá uma mensagem de acesso negado.
     echo json_encode([
         "sucesso" => false,
-        "mensagem" => "Acesso negado. Método incorreto."
+        "mensagem" => "Acesso negado. Metodo incorreto."
     ]);
 }
 ?>
