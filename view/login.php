@@ -8,8 +8,7 @@
 </head>
 <body>
 
-    <header class="barra-fixa">
-        </header>
+<?php include 'reusable/header.php'; ?>
 
     <main>
         <h1>Login de Usuário</h1>

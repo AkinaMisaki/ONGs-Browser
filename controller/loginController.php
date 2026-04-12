@@ -26,7 +26,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // Implementar a tratativa de conexão com o banco de dados para puxar as credencias do usuário mandando o usuário, retornando a senha criptografada do banco, e comparar com a senha enviada pelo usuário usando password_verify() para validar o login.
     if (!empty($usuarioSeguro) && !empty($rawSenha)) {
         // Query para procurar um usuario
-        $sql = "SELECT id_usuario, usuario_login, usuario_password, statusCheck
+        $sql = "SELECT id_usuario, usuario_login, usuario_password, statusConta
                 FROM usuario
                 WHERE usuario_login = ? 
                 LIMIT 1";
@@ -49,9 +49,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             ]);
             exit;
         }
-
         $result = $stmt->get_result();
-        if ($result['statusCheck'] < 0) {
+        if ($result['statusConta'] < 0) {
             echo json_encode([
                 "sucesso" => false,
                 "mensagem" => "Usuário inativo. Confirme seu email antes de continuar."
@@ -71,6 +70,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             session_start();
             $_SESSION['usuario_id'] = $usuario['id_usuario'];
             $_SESSION['usuario_login'] = $usuario['usuario_login'];
+            $_SESSION['statusConta'] = $usuario['statusConta'];
 
             $resposta = [
                 "sucesso" => true,
