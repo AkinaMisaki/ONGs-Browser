@@ -1,7 +1,7 @@
 <?php
 //header('Location: index.php');
 // Config público para vocês acessarem o banco de dados
-$env = parse_ini_file(dirname(__DIR__) . '/../config/.env');
+$env = parse_ini_file(__DIR__ . '/.env');
 
 $db_host      = $env['DB_HOST'];
 $db_user      = $env['DB_USER'];
