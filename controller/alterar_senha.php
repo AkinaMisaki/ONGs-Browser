@@ -56,9 +56,9 @@ if (strtotime($user['reset_expire']) < time()) {
     exit;
 }
 
-// Atualiza Senha
-//$newPassword = password_hash($password, PASSWORD_DEFAULT); //Descomentar isso aqui pra usar o hash quando for implementado no registro normal
-$newPassword = $password; //Usar plain text por enquanto.
+// Criptografa Senha e Atualiza no BD
+$options = ['memory_cost' => 65536, 'time_cost' => 4, 'threads' => 2];
+$newPassword = password_hash($rawSenha, PASSWORD_ARGON2ID, $options);
 $stmt = $conn->prepare("
     UPDATE usuario
     SET usuario_password = ?, reset_token = NULL, reset_expire = NULL
