@@ -3,8 +3,7 @@
 $meurastro = [];
 
 header('Content-Type: application/json; charset=utf-8');
-include __DIR__ . '/../config.php';
-
+include __DIR__ . '/../conn/config.php';
 // Método para garantir que este arquivo só seja acessado via POST
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
@@ -43,7 +42,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             // Statusconta setado para 1 temporariamente até o envio de email estiver concluido, que irá validar o status 0 para 1
             $statusConta = 1; 
             $meurastro[] = "Código de verificação gerado: $codigoVerificacao.";
-            $sql = "INSERT INTO usuario (nome_usuario, email, usuario_login, usuario_password, statusConta, resettoken) VALUES (?, ?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO usuario (nome_usuario, email, usuario_login, usuario_password, statusConta, reset_token) VALUES (?, ?, ?, ?, ?, ?)";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param(
                 "ssssss", 
@@ -84,7 +83,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             if ($e->getCode() == 1062) {
                 $resposta = ["sucesso" => false, "mensagem" => "Erro: Usuário ou E-mail já estão cadastrados."];
             } else {
-                $resposta = ["sucesso" => false, "mensagem" => "Erro interno."];
+                $resposta = ["sucesso" => false, "mensagem" => "Erro interno: " . $e->getMessage()];
             }
         }
 
