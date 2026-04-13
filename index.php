@@ -1,5 +1,5 @@
 <?php
-include __DIR__ . '/config.php';
+include __DIR__ . '/conn/config.php';
 
 $sql = "SELECT id_ong, nome_ong, descricao FROM ong ORDER BY RAND() LIMIT 20";
 $result = $conn->query($sql);
