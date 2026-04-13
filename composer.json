@@ -1,0 +1,8 @@
+{
+    "require": {
+        "spomky-labs/otphp": "^11.4"
+    },
+    "config": {
+        "vendor-dir": "libs"
+    }
+}
