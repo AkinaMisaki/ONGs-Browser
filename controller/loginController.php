@@ -1,7 +1,6 @@
 <?php
 $meurastro = [];
-include __DIR__ . '/../config.php';
-
+include __DIR__ . '/../conn/config.php';
 // Restringe para um unico ponto de entrada (controller) e define o tipo de resposta como JSON.
 header('Content-Type: application/json; charset=utf-8');
 
@@ -26,56 +25,75 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // Implementar a tratativa de conexão com o banco de dados para puxar as credencias do usuário mandando o usuário, retornando a senha criptografada do banco, e comparar com a senha enviada pelo usuário usando password_verify() para validar o login.
     if (!empty($usuarioSeguro) && !empty($rawSenha)) {
         // Query para procurar um usuario
-        $sql = "SELECT id_usuario, usuario_login, usuario_password, statusConta
-                FROM usuario
-                WHERE usuario_login = ? 
-                LIMIT 1";
+        $sql = "SELECT id_usuario, usuario_login, usuario_password, statusConta, usuario_2fa
+        FROM usuario
+        WHERE usuario_login = ? 
+        LIMIT 1";
 
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("s", $usuarioSeguro);
         $stmt->execute();
 
-        if($stmt->error) {
+        if ($stmt->error) {
             echo json_encode([
                 "sucesso" => false,
                 "mensagem" => "Erro ao buscar usuário."
             ]);
             exit;
         }
-        if ($stmt->affected_rows === 0) {
+        $result = $stmt->get_result();
+        $usuario = $result->fetch_assoc();
+
+        if (!$usuario) {
             echo json_encode([
                 "sucesso" => false,
                 "mensagem" => "Usuário ou senha incorretos."
             ]);
             exit;
         }
-        $result = $stmt->get_result();
-        if ($result['statusConta'] < 0) {
+
+        if ($usuario['statusConta'] < 0) {
             echo json_encode([
                 "sucesso" => false,
                 "mensagem" => "Usuário inativo. Confirme seu email antes de continuar."
             ]);
             exit;
         }
-        $usuario = $result->fetch_assoc();
+
 
         $options = [
-        'memory_cost' => 65536, 
-        'time_cost'   => 4,  
-        'threads'     => 2,   ];
+            'memory_cost' => 65536,
+            'time_cost' => 4,
+            'threads' => 2,
+        ];
         $senhaCriptografada = password_hash($rawSenha, PASSWORD_ARGON2ID, $options);
 
         if ($usuario && password_verify($rawSenha, $usuario['usuario_password'])) {
-
             session_start();
-            $_SESSION['usuario_id'] = $usuario['id_usuario'];
-            $_SESSION['usuario_login'] = $usuario['usuario_login'];
-            $_SESSION['statusConta'] = $usuario['statusConta'];
 
-            $resposta = [
-                "sucesso" => true,
-                "mensagem" => "Acesso permitido!"
-            ];
+            if (!empty($usuario['usuario_2fa'])) {
+                $_SESSION['2fa_pendente'] = true;
+                $_SESSION['2fa_secret'] = $usuario['usuario_2fa'];
+                $_SESSION['temp_usuario_id'] = $usuario['id_usuario'];
+                $_SESSION['temp_usuario_login'] = $usuario['usuario_login'];
+                $_SESSION['temp_statusConta'] = $usuario['statusConta'];
+
+                $resposta = [
+                    "sucesso" => true,
+                    "2fa" => true,
+                    "redirect" => "/ONGs-Browser/controller/2fa/verificar.php"
+                ];
+            } else {
+                $_SESSION['usuario_id'] = $usuario['id_usuario'];
+                $_SESSION['usuario_login'] = $usuario['usuario_login'];
+                $_SESSION['statusConta'] = $usuario['statusConta'];
+
+                $resposta = [
+                    "sucesso" => true,
+                    "2fa" => false,
+                    "redirect" => "/ONGs-Browser/index.php"
+                ];
+            }
 
         } else {
 
@@ -91,7 +109,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     echo json_encode($resposta);
 
 } else {
-    
+
     // Se alguém tentar acessar digitando direto na URL (método GET), será bloqueado e receberá uma mensagem de acesso negado.
     echo json_encode([
         "sucesso" => false,

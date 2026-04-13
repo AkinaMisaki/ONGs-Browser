@@ -24,7 +24,7 @@ async function realizarLogin() {
     }); // Log para depuração
 
     try {
-        const resposta = await fetch('../controller/loginController.php', {
+        const resposta = await fetch('/ONGs-Browser/controller/loginController.php', {
             method: 'POST',
             body: dadosFormulario
         });
@@ -33,10 +33,9 @@ async function realizarLogin() {
 
         // Tratando a resposta do PHP com alert
         if (resultado.sucesso) {
-            alert(resultado.mensagem); // Mensagem de sucesso
-            document.getElementById('formContato').reset(); // Limpa o formulário
+            window.location.href = resultado.redirect;
         } else {
-            alert('Erro no Login:\n' + resultado.mensagem); // O \n quebra a linha no alert
+            alert('Erro no Login:\n' + resultado.mensagem);
         }
 
     } catch (erro) {
