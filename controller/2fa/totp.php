@@ -18,7 +18,7 @@ if (!$usuario_id) {
     exit();
 }
 
-$sql  = "SELECT usuario_2fa, email FROM usuario WHERE id_usuario = ?";
+$sql  = "SELECT codVerificador, email FROM usuario WHERE id_usuario = ?";
 $stmt = $conn->prepare($sql);
 
 if ($stmt) {
@@ -29,7 +29,7 @@ if ($stmt) {
 
     $email = $linha['email'] ?? 'usuario';
 
-    if (!empty($linha['usuario_2fa'])) {
+    if (!empty($linha['codVerificador'])) {
         $erro = "2FA já está ativo na sua conta.";
     } else {
         $totp = TOTP::generate();

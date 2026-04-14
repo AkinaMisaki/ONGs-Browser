@@ -18,13 +18,13 @@ $url_base = "$protocolo://$host/ONGs-Browser";
 
                 <?php
                 include_once __DIR__ . '/../../config.php';
-                $stmt2fa = $conn->prepare("SELECT usuario_2fa FROM usuario WHERE id_usuario = ?");
+                $stmt2fa = $conn->prepare("SELECT codVerificador FROM usuario WHERE id_usuario = ?");
                 $stmt2fa->bind_param("i", $_SESSION['usuario_id']);
                 $stmt2fa->execute();
                 $row2fa = $stmt2fa->get_result()->fetch_assoc();
                 ?>
 
-                <?php if (empty($row2fa['usuario_2fa'])): ?>
+                <?php if (empty($row2fa['codVerificador'])): ?>
                     <button onclick="window.location.href='<?= $url_base ?>/controller/2fa/totp.php'">Ativar 2FA</button>
                 <?php endif; ?>
                 

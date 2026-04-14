@@ -1,6 +1,6 @@
 <?php
 $meurastro = [];
-include __DIR__ . '/../conn/config.php';
+include __DIR__ . '/../config.php';
 // Restringe para um unico ponto de entrada (controller) e define o tipo de resposta como JSON.
 header('Content-Type: application/json; charset=utf-8');
 
@@ -25,7 +25,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // Implementar a tratativa de conexão com o banco de dados para puxar as credencias do usuário mandando o usuário, retornando a senha criptografada do banco, e comparar com a senha enviada pelo usuário usando password_verify() para validar o login.
     if (!empty($usuarioSeguro) && !empty($rawSenha)) {
         // Query para procurar um usuario
-        $sql = "SELECT id_usuario, usuario_login, usuario_password, statusConta, usuario_2fa
+        $sql = "SELECT id_usuario, usuario_login, usuario_password, statusConta, codVerificador
         FROM usuario
         WHERE usuario_login = ? 
         LIMIT 1";
@@ -71,9 +71,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         if ($usuario && password_verify($rawSenha, $usuario['usuario_password'])) {
             session_start();
 
-            if (!empty($usuario['usuario_2fa'])) {
+            if (!empty($usuario['codVerificador'])) {
                 $_SESSION['2fa_pendente'] = true;
-                $_SESSION['2fa_secret'] = $usuario['usuario_2fa'];
+                $_SESSION['2fa_secret'] = $usuario['codVerificador'];
                 $_SESSION['temp_usuario_id'] = $usuario['id_usuario'];
                 $_SESSION['temp_usuario_login'] = $usuario['usuario_login'];
                 $_SESSION['temp_statusConta'] = $usuario['statusConta'];

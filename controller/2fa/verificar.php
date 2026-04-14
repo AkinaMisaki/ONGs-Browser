@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
         } else {
             // salva o secret no banco (ativação)
-            $sql  = "UPDATE usuario SET usuario_2fa = ? WHERE id_usuario = ?";
+            $sql  = "UPDATE usuario SET codVerificador = ? WHERE id_usuario = ?";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("si", $secret, $usuario_id);
             $stmt->execute();
