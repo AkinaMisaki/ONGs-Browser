@@ -120,7 +120,7 @@ if ($acao === 'alterar_senha') {
 // AÇÃO: Exportar Dados (LGPD — Art. 18, portabilidade)
 // -----------------------------------------------------------------------
 if ($acao === 'exportar_dados') {
-    $stmt = $conn->prepare("SELECT nome_usuario, email, usuario_login, statusConta, created_at FROM usuario WHERE id_usuario = ?");
+    $stmt = $conn->prepare("SELECT nome_usuario, email, usuario_login, statusConta FROM usuario WHERE id_usuario = ?");
     $stmt->bind_param("i", $id_usuario);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -141,7 +141,7 @@ if ($acao === 'exportar_dados') {
             'email'          => $dados['email'],
             'usuario_login'  => $dados['usuario_login'],
             'status_conta'   => $dados['statusConta'],
-            'data_criacao'   => $dados['created_at'] ?? 'Não disponível',
+            'data_criacao'   => 'Não disponível',
         ],
     ];
 
