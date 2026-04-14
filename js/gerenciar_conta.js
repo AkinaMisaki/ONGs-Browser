@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (resultado.sucesso) {
                     mostrarMensagem('Conta excluída. Redirecionando...', 'sucesso');
                     setTimeout(() => {
-                        window.location.href = '/universidade/index.php';
+                        window.location.href = '../index.php';
                     }, 2500);
                 }
             });
@@ -155,7 +155,7 @@ function tratarErro(mensagem) {
 
     if (mensagem === 'nao_autenticado') {
         setTimeout(() => {
-            window.location.href = '/universidade/view/login.php';
+            window.location.href = 'login.php';
         }, 2000);
     }
 }
@@ -177,6 +177,6 @@ function realizarLogout() {
         method: 'POST',
         body: new URLSearchParams({ acao: 'logout' })
     }).finally(() => {
-        window.location.href = '/universidade/view/login.php';
+        window.location.href = 'login.php';
     });
 }

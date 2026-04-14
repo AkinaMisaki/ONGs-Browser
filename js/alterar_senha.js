@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (resultado.sucesso) {
                 mostrarMensagem('Senha alterada com sucesso! Redirecionando...', 'sucesso');
                 setTimeout(() => {
-                    window.location.href = '/universidade/view/login.php';
+                    window.location.href = 'login.php';
                 }, 2000);
             } else {
                 const erros = {

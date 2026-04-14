@@ -1,7 +1,6 @@
 <?php  
 header('Content-Type: text/html; charset=utf-8'); 
-include __DIR__ . '/../config.php';
-
+include __DIR__ . '/../conn/config.php';
 
 $id = ($_GET['id']) ?? null; 
 

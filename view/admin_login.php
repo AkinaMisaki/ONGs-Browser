@@ -20,7 +20,7 @@ define('MAX_ATTEMPTS',      5);
 define('LOCKOUT_DURATION',  900); // 15 minutos em segundos
 
 // Reutiliza o config.php que já carrega o .env e cria a conexão com o banco
-require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../conn/config.php';
 $storedHash = $ADMIN_PASSWORD_HASH;
 
 // ── Controle de bloqueio por IP ────────────────────────────────────────────

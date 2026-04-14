@@ -8,7 +8,7 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 if (!isset($_SESSION['usuario_id'])) {
     die("Erro: Acesso não autorizado. Por favor, inicie sessão.");
 }
-require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/conn/config.php';
 $idUtilizador = $_SESSION['usuario_id'];
 $nomeOng = trim($_POST['ong_nome'] ?? '');
 $moedaOng = trim($_POST['ong_moeda'] ?? '');

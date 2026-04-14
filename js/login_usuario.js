@@ -24,7 +24,7 @@ async function realizarLogin() {
     }); // Log para depuração
 
     try {
-        const resposta = await fetch('/ONGs-Browser/controller/loginController.php', {
+        const resposta = await fetch('../controller/loginController.php', { 
             method: 'POST',
             body: dadosFormulario
         });

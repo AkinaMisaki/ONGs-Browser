@@ -1,12 +1,12 @@
 <?php
 session_start();
+include __DIR__ . '/../conn/config.php';
 
 if (!isset($_SESSION['usuario_id'])) {
-    header('Location: /universidade/view/login.php');
+    header("Location: " . $url_base . "/view/login.php");
     exit;
 }
 
-include __DIR__ . '/../config.php';
 
 $stmt = $conn->prepare("SELECT nome_usuario, email, usuario_login FROM usuario WHERE id_usuario = ?");
 $stmt->bind_param("i", $_SESSION['usuario_id']);
@@ -15,7 +15,7 @@ $result = $stmt->get_result();
 
 if ($result->num_rows !== 1) {
     session_destroy();
-    header('Location: /universidade/view/login.php');
+    header("Location: " . $url_base . "/view/login.php");
     exit;
 }
 
@@ -38,7 +38,7 @@ $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     <div class="barra-fixa">
         <span>Gerenciar Conta</span>
         <nav>
-            <button onclick="window.location.href='/universidade/index.php'">Início</button>
+            <button onclick="window.location.href='<?= $url_base ?>/index.php'">Início</button>
             <button onclick="realizarLogout()" class="btn-logout">Sair</button>
         </nav>
     </div>
@@ -127,6 +127,6 @@ $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 
     </main>
 
-    <script src="../js/gerenciar_conta.js"></script>
+    <script src="<?= $url_base ?>/js/gerenciar_conta.js"></script>
 </body>
 </html>

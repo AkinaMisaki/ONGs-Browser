@@ -20,7 +20,7 @@ if (empty($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_toke
     exit;
 }
 
-include __DIR__ . '/../config.php';
+include __DIR__ . '/../conn/config.php';
 
 $id_usuario = (int) $_SESSION['usuario_id'];
 $acao = trim($_POST['acao'] ?? '');

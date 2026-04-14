@@ -1,6 +1,6 @@
 <?php
 $meurastro = [];
-include __DIR__ . '/../config.php';
+include __DIR__ . '/../conn/config.php';
 // Restringe para um unico ponto de entrada (controller) e define o tipo de resposta como JSON.
 header('Content-Type: application/json; charset=utf-8');
 
@@ -81,7 +81,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $resposta = [
                     "sucesso" => true,
                     "2fa" => true,
-                    "redirect" => "/ONGs-Browser/controller/2fa/verificar.php"
+                    "redirect" => $url_base . "/controller/2fa/verificar.php"
                 ];
             } else {
                 $_SESSION['usuario_id'] = $usuario['id_usuario'];
@@ -91,7 +91,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $resposta = [
                     "sucesso" => true,
                     "2fa" => false,
-                    "redirect" => "/ONGs-Browser/index.php"
+                    "redirect" => $url_base . "/index.php"
                 ];
             }
 

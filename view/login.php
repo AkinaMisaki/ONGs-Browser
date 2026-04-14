@@ -32,5 +32,5 @@
             </div>
         </main>
 
-        <script src="/ONGs-Browser/js/login_usuario.js"></script>
+        <script src="<?= $url_base ?>/js/login_usuario.js"></script>
     </html>'

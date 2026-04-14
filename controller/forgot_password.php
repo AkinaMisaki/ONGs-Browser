@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: application/json');
 require __DIR__ . '/../../vendor/autoload.php';
-include __DIR__ . '/../config.php';
+include __DIR__ . '/../conn/config.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -34,7 +34,7 @@ if ($result->num_rows === 1) {
     $stmt->bind_param("sss", $token, $expire, $email);
     $stmt->execute();
 
-    $resetLink = "https://hanafuda.moe/universidade/view/alterar_senha.php?token=$token";
+    $resetLink = $url_base . "/view/alterar_senha.php?token=$token";
 
     // Manda email por SMTP
     $mail = new PHPMailer(true);

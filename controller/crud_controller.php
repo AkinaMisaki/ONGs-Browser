@@ -31,7 +31,7 @@ if (isset($_SESSION['admin_last_activity']) &&
 // Atualiza o timestamp — cada chamada AJAX conta como atividade
 $_SESSION['admin_last_activity'] = time();
 
-require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../conn/config.php';
 
 // Toda resposta desse controller é JSON
 header('Content-Type: application/json; charset=utf-8');

@@ -1,6 +1,6 @@
 <?php
 session_start();
-include __DIR__ . '/../config.php';
+include __DIR__ . '/../conn/config.php';
 
 $token = $_GET['token'] ?? null;
 

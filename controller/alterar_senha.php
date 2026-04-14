@@ -1,7 +1,7 @@
 <?php
 session_start();
 header('Content-Type: application/json');
-include __DIR__ . '/../config.php';
+include __DIR__ . '/../conn/config.php';
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     echo json_encode(['sucesso' => false, 'mensagem' => 'invalid_method']);
