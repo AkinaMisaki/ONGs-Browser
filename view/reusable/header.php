@@ -17,7 +17,7 @@ $url_base = "$protocolo://$host/ONGs-Browser";
                 <button onclick="window.location.href='<?= $url_base ?>/view/gerenciar_conta.php'">Minha Conta</button>
 
                 <?php
-                include_once __DIR__ . '/../../conn/config.php';
+                include_once __DIR__ . '/../../config.php';
                 $stmt2fa = $conn->prepare("SELECT usuario_2fa FROM usuario WHERE id_usuario = ?");
                 $stmt2fa->bind_param("i", $_SESSION['usuario_id']);
                 $stmt2fa->execute();
