@@ -2,10 +2,13 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-$protocolo = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
-$host = $_SERVER['HTTP_HOST'];
-$url_base = "$protocolo://$host/ONGs-Browser";
+
+if (!isset($url_base)) {
+
+    require_once __DIR__ . '/../../conn/config.php';
+}
 ?>
+
 <header class="barra-fixa">
     <div class="header-container">
         <h1 onclick="window.location.href='<?= $url_base ?>/index.php'">ONGs Browser</h1>
