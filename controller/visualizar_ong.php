@@ -1,5 +1,7 @@
 <?php  
 header('Content-Type: text/html; charset=utf-8'); 
+include '../view/reusable/header.php'; 
+
 include __DIR__ . '/../conn/config.php';
 
 $id = ($_GET['id']) ?? null; 

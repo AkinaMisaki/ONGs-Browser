@@ -4,7 +4,6 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 if (!isset($url_base)) {
-
     require_once __DIR__ . '/../../conn/config.php';
 }
 ?>
