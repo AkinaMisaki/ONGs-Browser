@@ -11,7 +11,6 @@ $db_port      = (int) $env['DB_PORT'];
 $SMTP_PASSWORD        = $env['SMTP_PASSWORD'];
 $ADMIN_PASSWORD_HASH  = $env['ADMIN_PASSWORD_HASH'] ?? '';
 $url_base              = $env['BASE_URL'] ?? 'http://127.0.0.1/ONGs-Browser';
-//$url_base = "https://hanafuda.moe/universidade"; pro hanafuda
 
 $conn = new mysqli($db_host, $db_user, $db_pass, $db_name, $db_port);
 
