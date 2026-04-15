@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    
-    <link rel="stylesheet" href="index.css">
+    <title>Criação de Ongs</title>
+    <link rel="stylesheet" href="criacaoOng.css">
 </head>
 <body>
 
@@ -21,11 +20,11 @@
         <h1>Criação de Ongs</h1>
         
         <form id="formContato">
-            <label for="NomeOng">Nome da Ong</label>
-            <input type="text" id="nomeOng" name="Nome_Ong" placeholder="Digite o nome da Ong">
+            <label for="nomeOng">Nome da Ong</label>
+            <input type="text" id="nomeOng" name="Nome_Ong" placeholder="Digite o nome da Ong" required>
 
-            <label for="descricao">Descrição da Ong</label>
-            <textarea id="descricaoOng" name="descricaoOng" placeholder="Escreva uma descrição" rows="4"></textarea>
+            <label for="descricaoOng">Descrição da Ong</label>
+            <textarea id="descricaoOng" name="descricaoOng" placeholder="Escreva uma descrição" rows="4" required></textarea>
             
             <label for="imagemOng">Imagem da Ong</label>
             <div id="drop-zone" class="drop-zone">
@@ -33,8 +32,7 @@
                  <input type="file" id="imagemOng" name="imagemOng" hidden>
             </div>
 
-            <button type="button">Registrar Ong</button>
-
+            <button type="submit">Registrar Ong</button>
         </form>
         <a href="registrar.php">Novo por Aqui? Cadastre-se!</a>
     </main>

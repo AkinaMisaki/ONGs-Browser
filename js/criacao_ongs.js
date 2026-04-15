@@ -1,4 +1,3 @@
-//  LÓGICA DO DRAG & DROP
 const dropZone = document.getElementById('drop-zone');
 const fileInput = document.getElementById('imagemOng');
 const form = document.getElementById('formContato');
@@ -16,7 +15,6 @@ if (dropZone && fileInput) {
     dropZone.ondrop = (e) => {
         e.preventDefault();
         dropZone.classList.remove('dragover');
-
         const files = e.dataTransfer.files;
         if (files.length > 0) {
             validarEAtribuirArquivo(files[0]);
@@ -32,23 +30,16 @@ if (dropZone && fileInput) {
 
 function validarEAtribuirArquivo(arquivo) {
     const tiposPermitidos = ['image/jpeg', 'image/png', 'image/webp'];
-    
     if (!tiposPermitidos.includes(arquivo.type)) {
         alert("Por favor, selecione apenas imagens (JPG, PNG ou WebP).");
-        fileInput.value = ""; // Limpa o input
+        fileInput.value = "";
         return;
     }
-
-
     const dataTransfer = new DataTransfer();
     dataTransfer.items.add(arquivo);
     fileInput.files = dataTransfer.files;
-
     dropZone.querySelector('span').innerText = `Arquivo: ${arquivo.name}`;
 }
-
-// FUNÇÃO DE ENVIO 
-
 
 if (form) {
     form.addEventListener('submit', async (e) => {
@@ -62,7 +53,6 @@ async function realizarCadastroUsuario() {
     const campoDescricao = document.getElementById('descricaoOng').value.trim();
     const arquivoImagem = fileInput.files[0];
 
-    // Validação
     if (!campoOng || !campoDescricao || !arquivoImagem) {
         alert('Por favor, preencha todos os campos e selecione uma imagem.');
         return;
@@ -79,7 +69,6 @@ async function realizarCadastroUsuario() {
             body: dadosFormulario
         });
 
-        
         if (!resposta.ok) throw new Error('Erro na rede');
 
         const resultado = await resposta.json();
@@ -91,7 +80,6 @@ async function realizarCadastroUsuario() {
         } else {
             alert('Erro: ' + resultado.mensagem);
         }
-
     } catch (erro) {
         alert('Erro crítico: Não foi possível conectar ao servidor.');
         console.error("Detalhes do erro:", erro);

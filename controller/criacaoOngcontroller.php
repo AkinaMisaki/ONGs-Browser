@@ -4,8 +4,8 @@ include __DIR__ . '/../config.php';
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
-    $rawOng = (isset($_POST['Ong']) && is_string($_POST['Ong'])) ? trim($_POST['Ong']) : '';
-    $rawDescricao = (isset($_POST['Descricao']) && is_string($_POST['Descricao'])) ? trim($_POST['Descricao']) : '';
+    $rawOng = (isset($_POST['Ong'])) ? htmlspecialchars(trim($_POST['Ong'])) : '';
+    $rawDescricao = (isset($_POST['Descricao'])) ? htmlspecialchars(trim($_POST['Descricao'])) : '';
 
     $diretorioDestino = __DIR__ . '/../uploads/'; 
     
@@ -17,46 +17,38 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         
         $arquivo = $_FILES['imagemOng'];
 
-        if ($arquivo['error'] === UPLOAD_ERR_OK)
-            $extensao = $arquivo['name'];
+        if ($arquivo['error'] === UPLOAD_ERR_OK) {
+            $extensao = pathinfo($arquivo['name'], PATHINFO_EXTENSION);
             $novoNome = uniqid() . "." . $extensao; 
             $caminhoCompleto = $diretorioDestino . $novoNome;
             $caminhoBanco = '/universidade/uploads/' . $novoNome; 
 
-            if (move_uploaded_file($arquivo['tmp_name'], $diretorioDestino. $arquivo['name'])) {
+            if (move_uploaded_file($arquivo['tmp_name'], $caminhoCompleto)) {
                 try {
-                    $sql = "INSERT INTO ong (nome_ong, descricao, caminho_arquivo) VALUES (?, ?, ?, ?)";
+                    $sql = "INSERT INTO ong (nome_ong, descricao, caminho_arquivo) VALUES (?, ?, ?)";
                     $stmt = $conn->prepare($sql);
-                    $stmt->bind_param(
-                        "ssss", 
-                        $rawOng, 
-                        $rawDescricao, 
-                        $caminhoBanco
-                    );
+                    $stmt->bind_param("sss", $rawOng, $rawDescricao, $caminhoBanco);
                     $stmt->execute();
                     
                     $resposta = ["sucesso" => true, "mensagem" => "Cadastro e upload realizados com sucesso!"];
                 } catch (mysqli_sql_exception $e) {
-                    unlink($caminhoCompleto);
+                    if (file_exists($caminhoCompleto)) unlink($caminhoCompleto);
                     if ($e->getCode() == 1062) {
-                        $resposta = ["sucesso" => false, "mensagem" => "Erro: Nome já cadastrados."];
+                        $resposta = ["sucesso" => false, "mensagem" => "Erro: Nome já cadastrado."];
                     } else {
                         $resposta = ["sucesso" => false, "mensagem" => "Erro no banco de dados."];
                     }
                 }
             } else {
-                $resposta = ["sucesso" => false, "mensagem" => "Erro ao mover o arquivo para a pasta de destino."];
+                $resposta = ["sucesso" => false, "mensagem" => "Erro ao mover o arquivo."];
             }
         } else {
             $resposta = ["sucesso" => false, "mensagem" => "Erro no envio do arquivo."];
         }
-
     } else {
-        $resposta = ["sucesso" => false, "mensagem" => "Preencha todos os campos e selecione uma imagem."];
+        $resposta = ["sucesso" => false, "mensagem" => "Preencha todos os campos."];
     }
-
     echo json_encode($resposta);
 } else {
     echo json_encode(["sucesso" => false, "mensagem" => "Acesso negado."]);
 }
-?>
