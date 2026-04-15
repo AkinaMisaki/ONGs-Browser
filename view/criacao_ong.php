@@ -8,13 +8,7 @@
 </head>
 <body>
 
-    <header class="barra-fixa">
-        <nav>
-            <button onclick="window.location.href='../index.php'">Início</button>
-            <button onclick="window.location.href='sobre.html'">Sobre</button>
-            <button onclick="window.location.href='contato.html'">Contato</button>
-        </nav>
-    </header>
+<?php include 'reusable/header.php'; ?>
 
     <main>
         <h1>Criação de Ongs</h1>

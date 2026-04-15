@@ -3,7 +3,7 @@ session_start();
 $meurastro = [];
 
 header('Content-Type: application/json; charset=utf-8');
-include __DIR__ . '/../conn/config.php';
+include __DIR__ . '/../config.php';
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
