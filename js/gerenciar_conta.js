@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function () {
         formSenha.addEventListener('submit', async function (e) {
             e.preventDefault();
 
-            const novaSenha    = document.getElementById('nova_senha')?.value ?? '';
+            const novaSenha      = document.getElementById('nova_senha')?.value ?? '';
             const confirmarSenha = document.getElementById('confirmar_senha')?.value ?? '';
 
             if (novaSenha !== confirmarSenha) {
@@ -42,26 +42,21 @@ document.addEventListener('DOMContentLoaded', function () {
             e.preventDefault();
 
             const btn = formExportar.querySelector('button[type="submit"]');
-            btn.disabled = true;
+            btn.disabled    = true;
             btn.textContent = 'Gerando arquivo...';
 
             try {
-                const dadosFormulario = new FormData(formExportar);
                 const resposta = await fetch('../controller/gerenciar_conta.php', {
                     method: 'POST',
-                    body: dadosFormulario
+                    body: new FormData(formExportar)
                 });
-
-                if (!resposta.ok) throw new Error(`HTTP ${resposta.status}`);
-
                 const resultado = await resposta.json();
 
                 if (resultado.sucesso) {
-                    const json = JSON.stringify(resultado.dados, null, 2);
-                    const blob = new Blob([json], { type: 'application/json' });
+                    const blob = new Blob([JSON.stringify(resultado.dados, null, 2)], { type: 'application/json' });
                     const url  = URL.createObjectURL(blob);
                     const link = document.createElement('a');
-                    link.href     = url;
+                    link.href = url;
                     link.download = 'meus_dados_ongs_browser.json';
                     link.click();
                     URL.revokeObjectURL(url);
@@ -73,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.error(erro);
                 mostrarMensagem('Erro ao conectar com o servidor. Tente novamente.', 'erro');
             } finally {
-                btn.disabled = false;
+                btn.disabled    = false;
                 btn.textContent = 'Baixar Meus Dados';
             }
         });
@@ -91,21 +86,87 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            const confirmacaoUsuario = window.confirm(
-                'Tem certeza que deseja excluir sua conta?\n\nEsta ação é IRREVERSÍVEL e todos os seus dados serão removidos permanentemente.'
-            );
-            if (!confirmacaoUsuario) return;
+            if (!window.confirm('Tem certeza que deseja excluir sua conta?\n\nEsta ação é IRREVERSÍVEL e todos os seus dados serão removidos permanentemente.')) return;
 
             await enviarFormulario(formDeletar, '../controller/gerenciar_conta.php', function (resultado) {
                 if (resultado.sucesso) {
                     mostrarMensagem('Conta excluída. Redirecionando...', 'sucesso');
-                    setTimeout(() => {
-                        window.location.href = '/universidade/index.php';
-                    }, 2500);
+                    setTimeout(() => { window.location.href = '/universidade/index.php'; }, 2500);
                 }
             });
         });
     }
+
+    // --- 2FA: Gerar QR Code ---
+    const btnGerarQr = document.getElementById('btnGerarQr');
+    if (btnGerarQr) {
+        btnGerarQr.addEventListener('click', async function () {
+            btnGerarQr.disabled    = true;
+            btnGerarQr.textContent = 'Gerando QR Code...';
+
+            // Busca o csrf_token do formulário de ativação
+            const csrfToken = document.querySelector('#formAtivar2fa input[name="csrf_token"]')?.value;
+
+            const dados = new FormData();
+            dados.append('acao', 'gerar_qr_2fa');
+            dados.append('csrf_token', csrfToken);
+
+            try {
+                const resposta  = await fetch('../controller/gerenciar_conta.php', { method: 'POST', body: dados });
+                const resultado = await resposta.json();
+
+                if (resultado.sucesso) {
+                    document.getElementById('qrContainer').innerHTML  = resultado.qr_svg;
+                    document.getElementById('secretManual').textContent = resultado.secret;
+                    document.getElementById('setup2fa').classList.remove('hidden');
+                    btnGerarQr.style.display = 'none';
+                } else {
+                    tratarErro(resultado.mensagem);
+                    btnGerarQr.disabled    = false;
+                    btnGerarQr.textContent = 'Configurar 2FA';
+                }
+            } catch (erro) {
+                console.error(erro);
+                mostrarMensagem('Erro ao gerar QR Code. Tente novamente.', 'erro');
+                btnGerarQr.disabled    = false;
+                btnGerarQr.textContent = 'Configurar 2FA';
+            }
+        });
+    }
+
+    // --- 2FA: Confirmar ativação ---
+    const formAtivar2fa = document.getElementById('formAtivar2fa');
+    if (formAtivar2fa) {
+        formAtivar2fa.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            await enviarFormulario(formAtivar2fa, '../controller/gerenciar_conta.php', function (resultado) {
+                if (resultado.sucesso) {
+                    setTimeout(() => { window.location.reload(); }, 1500);
+                }
+            });
+        });
+    }
+
+    // --- 2FA: Desativar ---
+    const formDesativar2fa = document.getElementById('formDesativar2fa');
+    if (formDesativar2fa) {
+        formDesativar2fa.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            if (!window.confirm('Deseja mesmo desativar o 2FA? Sua conta ficará menos segura.')) return;
+            await enviarFormulario(formDesativar2fa, '../controller/gerenciar_conta.php', function (resultado) {
+                if (resultado.sucesso) {
+                    setTimeout(() => { window.location.reload(); }, 1500);
+                }
+            });
+        });
+    }
+
+    // --- Só dígitos nos campos TOTP ---
+    document.querySelectorAll('input[inputmode="numeric"]').forEach(function (input) {
+        input.addEventListener('input', function () {
+            this.value = this.value.replace(/\D/g, '').slice(0, 6);
+        });
+    });
 
 });
 
@@ -116,18 +177,12 @@ document.addEventListener('DOMContentLoaded', function () {
 async function enviarFormulario(form, url, callbackSucesso) {
     const btn = form.querySelector('button[type="submit"]');
     const textoOriginal = btn.textContent;
-    btn.disabled = true;
+    btn.disabled    = true;
     btn.textContent = 'Aguarde...';
 
     try {
-        const dadosFormulario = new FormData(form);
-        const resposta = await fetch(url, {
-            method: 'POST',
-            body: dadosFormulario
-        });
-
+        const resposta  = await fetch(url, { method: 'POST', body: new FormData(form) });
         if (!resposta.ok) throw new Error(`HTTP ${resposta.status}`);
-
         const resultado = await resposta.json();
 
         if (resultado.sucesso) {
@@ -140,7 +195,7 @@ async function enviarFormulario(form, url, callbackSucesso) {
         console.error(erro);
         mostrarMensagem('Erro ao conectar com o servidor. Tente novamente.', 'erro');
     } finally {
-        btn.disabled = false;
+        btn.disabled    = false;
         btn.textContent = textoOriginal;
     }
 }
@@ -149,14 +204,11 @@ function tratarErro(mensagem) {
     const erros = {
         'nao_autenticado': 'Sessão expirada. Faça login novamente.',
         'invalid_csrf':    'Erro de segurança. Recarregue a página e tente novamente.',
-        'Ação inválida.':  'Ação inválida. Recarregue a página.',
     };
     mostrarMensagem(erros[mensagem] || mensagem || 'Erro desconhecido.', 'erro');
 
     if (mensagem === 'nao_autenticado') {
-        setTimeout(() => {
-            window.location.href = '/universidade/view/login.php';
-        }, 2000);
+        setTimeout(() => { window.location.href = '/universidade/view/login.php'; }, 2000);
     }
 }
 
@@ -164,7 +216,7 @@ function mostrarMensagem(texto, tipo = 'erro') {
     const el = document.getElementById('mensagem-global');
     if (!el) return;
     el.textContent = texto;
-    el.className = `mensagem-global ${tipo}`;
+    el.className   = `mensagem-global ${tipo}`;
 
     clearTimeout(el._timeout);
     el._timeout = setTimeout(() => {
@@ -173,10 +225,6 @@ function mostrarMensagem(texto, tipo = 'erro') {
 }
 
 function realizarLogout() {
-    fetch('../controller/loginController.php', {
-        method: 'POST',
-        body: new URLSearchParams({ acao: 'logout' })
-    }).finally(() => {
-        window.location.href = '/universidade/view/login.php';
-    });
+    fetch('../controller/logout.php', { method: 'GET' })
+        .finally(() => { window.location.href = '/universidade/view/login.php'; });
 }

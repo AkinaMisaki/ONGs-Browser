@@ -1,7 +1,6 @@
 <?php  
 header('Content-Type: text/html; charset=utf-8'); 
-include __DIR__ . '/../config.php';
-
+include '../conn/config.php'; //alterar pro caminho correto 
 
 $id = ($_GET['id']) ?? null; 
 

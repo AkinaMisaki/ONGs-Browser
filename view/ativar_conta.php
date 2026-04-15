@@ -1,56 +1,76 @@
+<?php
+$token = htmlspecialchars(trim($_GET['token'] ?? ''), ENT_QUOTES, 'UTF-8');
+?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ativar Conta</title>
-    <link rel="stylesheet" href="css/login_usuario.css">
+    <title>Ativar Conta — ONGs Browser</title>
+    <link rel="stylesheet" href="css/alterar_senha.css">
+    <style>
+        .icone-status { font-size: 3rem; display: block; text-align: center; margin-bottom: 1rem; }
+        #mensagem { text-align: center; margin-bottom: 1rem; font-size: 1rem; }
+        #mensagem.sucesso { color: #155724; }
+        #mensagem.erro    { color: #721c24; }
+        #acoes { text-align: center; margin-top: 1.2rem; }
+        #acoes a { color: #0056b3; font-weight: bold; text-decoration: underline; }
+    </style>
 </head>
 <body>
-    <header class="barra-fixa">
-        <nav>
-            <button onclick="window.location.href='../index.php'">Início</button>
-        </nav>
-    </header>
-
+    <div class="barra-fixa">
+        <span>Ativação de Conta</span>
+    </div>
     <main>
-        <h1>Ativação de Conta</h1>
-        <form id="formAtivacao">
-            <input type="hidden" id="emailAtivacao" value="<?= htmlspecialchars($_GET['email'] ?? '') ?>">
-            
-            <label for="codigo">Código de Verificação (6 dígitos):</label>
-            <input type="text" id="codigo" maxlength="6" placeholder="Ex: 123456" style="text-align: center; font-size: 1.5rem; letter-spacing: 5px;">
+        <h1>Ativar Conta</h1>
 
-            <button type="button" onclick="validarAtivacao()">Ativar Conta</button>
-        </form>
+        <?php if (empty($token)): ?>
+            <p id="mensagem" class="erro">Link de ativação inválido ou ausente.</p>
+            <div id="acoes"><a href="/universidade/view/login.php">Ir para o Login</a></div>
+        <?php else: ?>
+            <span id="icone" class="icone-status">⏳</span>
+            <p id="mensagem">Verificando seu link de ativação...</p>
+            <div id="acoes" style="display:none;">
+                <a href="/universidade/view/login.php">Ir para o Login</a>
+            </div>
+        <?php endif; ?>
     </main>
 
+    <?php if (!empty($token)): ?>
     <script>
-        async function validarAtivacao() {
-            const email = document.getElementById('emailAtivacao').value;
-            const codigo = document.getElementById('codigo').value.trim();
+    (async function () {
+        const form = new FormData();
+        form.append('token', <?= json_encode($token) ?>);
 
-            if (!email || codigo.length !== 6) {
-                alert("Por favor, insira o código de 6 dígitos corretamente.");
-                return;
+        const erros = {
+            'link_invalido': 'Link de ativação inválido. Certifique-se de usar o link enviado ao seu e-mail.',
+            'link_expirado': 'Link expirado. Refaça o cadastro para receber um novo e-mail de ativação.',
+            'ja_ativa':      'Esta conta já foi ativada. Faça login normalmente.',
+        };
+
+        try {
+            const resp   = await fetch('../controller/ativar_conta.php', { method: 'POST', body: form });
+            const result = await resp.json();
+
+            document.getElementById('icone').textContent = result.sucesso ? '✅' : '❌';
+            document.getElementById('mensagem').className   = result.sucesso ? 'sucesso' : 'erro';
+            document.getElementById('mensagem').textContent = result.sucesso
+                ? result.mensagem
+                : (erros[result.mensagem] || result.mensagem);
+
+            document.getElementById('acoes').style.display = 'block';
+
+            if (result.sucesso) {
+                setTimeout(() => { window.location.href = '/universidade/view/login.php'; }, 3000);
             }
-
-            const dados = new FormData();
-            dados.append('email', email);
-            dados.append('codigo', codigo);
-
-            try {
-                const resposta = await fetch('../controller/ativar_conta.php', { method: 'POST', body: dados });
-                const resultado = await resposta.json();
-
-                alert(resultado.mensagem);
-                if (resultado.sucesso) {
-                    window.location.href = 'login.php'; // Manda pro login se deu certo
-                }
-            } catch (erro) {
-                alert('Erro na comunicação com o servidor.');
-            }
+        } catch (e) {
+            document.getElementById('icone').textContent    = '❌';
+            document.getElementById('mensagem').className   = 'erro';
+            document.getElementById('mensagem').textContent = 'Erro ao conectar com o servidor. Tente novamente.';
+            document.getElementById('acoes').style.display  = 'block';
         }
+    })();
     </script>
+    <?php endif; ?>
 </body>
 </html>

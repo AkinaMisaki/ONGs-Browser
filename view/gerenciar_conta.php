@@ -8,7 +8,7 @@ if (!isset($_SESSION['usuario_id'])) {
 
 include __DIR__ . '/../config.php';
 
-$stmt = $conn->prepare("SELECT nome_usuario, email, usuario_login FROM usuario WHERE id_usuario = ?");
+$stmt = $conn->prepare("SELECT nome_usuario, email, usuario_login, codVerificador FROM usuario WHERE id_usuario = ?");
 $stmt->bind_param("i", $_SESSION['usuario_id']);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -24,6 +24,7 @@ $stmt->close();
 $conn->close();
 
 $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+$tem2fa = !empty($usuario['codVerificador']);
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -102,6 +103,57 @@ $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
                 <input type="hidden" name="acao" value="exportar_dados">
                 <button type="submit" class="btn-lgpd">Baixar Meus Dados</button>
             </form>
+        </section>
+
+        <!-- Autenticação em Dois Fatores -->
+        <section class="card card-2fa <?= $tem2fa ? 'ativa' : '' ?>">
+            <h2>Autenticação em Dois Fatores (2FA)</h2>
+
+            <?php if ($tem2fa): ?>
+                <p class="status-2fa ativo">2FA ativado via Google Authenticator</p>
+                <p class="lgpd-descricao">
+                    Para desativar o 2FA, confirme com um código atual do seu aplicativo autenticador.
+                </p>
+                <form id="formDesativar2fa">
+                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                    <input type="hidden" name="acao" value="desativar_2fa">
+                    <label for="totp_desativar">Código do Google Authenticator</label>
+                    <input type="text" id="totp_desativar" name="codigo_totp"
+                           maxlength="6" placeholder="000000" inputmode="numeric"
+                           autocomplete="one-time-code" required>
+                    <button type="submit" class="btn-perigo">Desativar 2FA</button>
+                </form>
+            <?php else: ?>
+                <p class="status-2fa inativo">2FA desativado</p>
+                <p class="lgpd-descricao">
+                    Adicione uma camada extra de segurança à sua conta. Após ativar, cada login
+                    exigirá um código de 6 dígitos gerado pelo <strong>Google Authenticator</strong>
+                    (ou qualquer app TOTP compatível).
+                </p>
+                <button type="button" id="btnGerarQr" class="btn-2fa-ativar">Configurar 2FA</button>
+
+                <div id="setup2fa" class="setup-2fa hidden">
+                    <p class="instrucao-qr">
+                        1. Abra o <strong>Google Authenticator</strong> e toque em "+"<br>
+                        2. Escaneie o QR code abaixo<br>
+                        3. Digite o código gerado para confirmar
+                    </p>
+                    <div id="qrContainer" class="qr-container"></div>
+                    <details class="secret-manual">
+                        <summary>Não consegue escanear? Use a chave manual</summary>
+                        <code id="secretManual"></code>
+                    </details>
+                    <form id="formAtivar2fa">
+                        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                        <input type="hidden" name="acao" value="ativar_2fa">
+                        <label for="totp_confirmar">Código de confirmação</label>
+                        <input type="text" id="totp_confirmar" name="codigo_totp"
+                               maxlength="6" placeholder="000000" inputmode="numeric"
+                               autocomplete="one-time-code" required>
+                        <button type="submit">Confirmar e Ativar</button>
+                    </form>
+                </div>
+            <?php endif; ?>
         </section>
 
         <!-- LGPD - Deletar Conta -->

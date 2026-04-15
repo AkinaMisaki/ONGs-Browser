@@ -24,18 +24,20 @@ async function realizarLogin() {
     }); // Log para depuração
 
     try {
-        const resposta = await fetch('/ONGs-Browser/controller/loginController.php', {
+        const resposta = await fetch('../controller/loginController.php', {
             method: 'POST',
             body: dadosFormulario
         });
 
         const resultado = await resposta.json();
 
-        // Tratando a resposta do PHP com alert
-        if (resultado.sucesso) {
-            window.location.href = resultado.redirect;
+        // Tratando a resposta do PHP
+        if (resultado.sucesso && resultado.acao === '2fa_required') {
+            window.location.href = '/universidade/view/aut_2f.php';
+        } else if (resultado.sucesso) {
+            window.location.href = '/universidade/index.php';
         } else {
-            alert('Erro no Login:\n' + resultado.mensagem);
+            alert('Erro no Login:\n' + resultado.mensagem); // O \n quebra a linha no alert
         }
 
     } catch (erro) {

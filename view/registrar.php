@@ -29,11 +29,12 @@
             <label for="new_passCheck">Nova Senha:</label>
             <input type="password" id="new_passCheck" name="password" placeholder="Digite sua senha">
             <div class="alerta-senha">
-                Lembre-se: sua senha deve ter no mínimo 8 caracteres, incluindo letras maiúsculas, minúsculas, números e pelo menos um caractere especial (!, @, #, etc).       
+                Lembre-se: sua senha deve ter no mínimo 8 caracteres, incluindo letras maiúsculas, minúsculas, números e pelo menos um caractere especial (!, @, #, etc).
             </div>
             <button type="button" onclick="realizarCadastroUsuario()">Cadastrar</button>
         </form>
     </main>
 
-    <script src="/ONGs-Browser/js/registro_usuario.js"></script></body>
+    <script src="../js/registro_usuario.js"></script>
+</body>
 </html>
