@@ -6,7 +6,7 @@ if (!isset($_SESSION['statusConta'])) {
     exit();
 }
 if ($_SESSION['statusConta'] === 2) {
-    header("Location: view\criacao_ong.php");
+    header("Location: criacao_ong.php");
     exit();
 }
 ?>
@@ -15,7 +15,7 @@ if ($_SESSION['statusConta'] === 2) {
 <head>
     <meta charset="UTF-8">
     <title>Cadastro de Organizador</title>
-    <link rel="stylesheet" href="view\css\registroOrganizadores.css">
+    <link rel="stylesheet" href="css/registroOrganizadores.css">
 </head>
 <body>
 
@@ -36,6 +36,6 @@ if ($_SESSION['statusConta'] === 2) {
     <div id="resposta"></div>
 </div>
 
-<script src="js\registroOrganizador.js"></script>
+<script src="../js/registroOrganizador.js"></script>
 </body>
 </html>

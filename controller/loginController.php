@@ -46,7 +46,7 @@ if (!$usuario || !password_verify($rawSenha, $usuario['usuario_password'])) {
 }
 
 // Conta não ativada
-if ((int) $usuario['statusConta'] !== 1) {
+if ((int) $usuario['statusConta'] <= 0) {
     echo json_encode(["sucesso" => false, "mensagem" => "Usuário inativo. Confirme seu email antes de continuar."]);
     exit;
 }
@@ -57,6 +57,7 @@ session_start();
 if (!empty($usuario['codVerificador'])) {
     $_SESSION['2fa_pending_id']    = $usuario['id_usuario'];
     $_SESSION['2fa_pending_login'] = $usuario['usuario_login'];
+    $_SESSION['statusConta'] = $usuario['statusConta'];
     echo json_encode(["sucesso" => true, "acao" => "2fa_required"]);
     exit;
 }
@@ -64,6 +65,7 @@ if (!empty($usuario['codVerificador'])) {
 // 2FA não configurado — login direto
 $_SESSION['usuario_id']    = $usuario['id_usuario'];
 $_SESSION['usuario_login'] = $usuario['usuario_login'];
+$_SESSION['statusConta'] = $usuario['statusConta'];
 
 echo json_encode(["sucesso" => true, "mensagem" => "Acesso permitido!"]);
 ?>
