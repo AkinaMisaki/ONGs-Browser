@@ -1,6 +1,14 @@
 <?php
 session_start();
 header('Content-Type: application/json; charset=utf-8');
+require __DIR__ . '/../../vendor/autoload.php';
+include __DIR__ . '/../config.php';
+
+use PragmaRX\Google2FA\Google2FA;
+use BaconQrCode\Renderer\ImageRenderer;
+use BaconQrCode\Renderer\Image\SvgImageBackEnd;
+use BaconQrCode\Renderer\RendererStyle\RendererStyle;
+use BaconQrCode\Writer;
 
 // Só aceita POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -19,8 +27,6 @@ if (empty($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_toke
     echo json_encode(['sucesso' => false, 'mensagem' => 'invalid_csrf']);
     exit;
 }
-
-include __DIR__ . '/../config.php';
 
 $id_usuario = (int) $_SESSION['usuario_id'];
 $acao = trim($_POST['acao'] ?? '');
@@ -44,16 +50,9 @@ if ($acao === 'alterar_nome') {
     $stmt = $conn->prepare("UPDATE usuario SET nome_usuario = ? WHERE id_usuario = ?");
     $stmt->bind_param("si", $novo_nome, $id_usuario);
     $stmt->execute();
-
-    if ($stmt->affected_rows < 0) {
-        echo json_encode(['sucesso' => false, 'mensagem' => 'Erro ao atualizar o nome. Tente novamente.']);
-        $stmt->close();
-        $conn->close();
-        exit;
-    }
-
     $stmt->close();
     $conn->close();
+
     echo json_encode(['sucesso' => true, 'mensagem' => 'Nome atualizado com sucesso!', 'novo_nome' => htmlspecialchars($novo_nome)]);
     exit;
 }
@@ -62,9 +61,9 @@ if ($acao === 'alterar_nome') {
 // AÇÃO: Alterar Senha
 // -----------------------------------------------------------------------
 if ($acao === 'alterar_senha') {
-    $senha_atual   = $_POST['senha_atual']    ?? '';
-    $nova_senha    = $_POST['nova_senha']     ?? '';
-    $confirmar     = $_POST['confirmar_senha'] ?? '';
+    $senha_atual = $_POST['senha_atual']     ?? '';
+    $nova_senha  = $_POST['nova_senha']      ?? '';
+    $confirmar   = $_POST['confirmar_senha'] ?? '';
 
     if (empty($senha_atual) || empty($nova_senha) || empty($confirmar)) {
         echo json_encode(['sucesso' => false, 'mensagem' => 'Preencha todos os campos.']);
@@ -82,12 +81,10 @@ if ($acao === 'alterar_senha') {
         exit;
     }
 
-    // Busca senha atual do banco para verificar
     $stmt = $conn->prepare("SELECT usuario_password FROM usuario WHERE id_usuario = ?");
     $stmt->bind_param("i", $id_usuario);
     $stmt->execute();
-    $result = $stmt->get_result();
-    $usuario = $result->fetch_assoc();
+    $usuario = $stmt->get_result()->fetch_assoc();
     $stmt->close();
 
     if (!$usuario || !password_verify($senha_atual, $usuario['usuario_password'])) {
@@ -102,16 +99,9 @@ if ($acao === 'alterar_senha') {
     $stmt = $conn->prepare("UPDATE usuario SET usuario_password = ? WHERE id_usuario = ?");
     $stmt->bind_param("si", $nova_senha_hash, $id_usuario);
     $stmt->execute();
-
-    if ($stmt->affected_rows !== 1) {
-        echo json_encode(['sucesso' => false, 'mensagem' => 'Erro ao atualizar a senha. Tente novamente.']);
-        $stmt->close();
-        $conn->close();
-        exit;
-    }
-
     $stmt->close();
     $conn->close();
+
     echo json_encode(['sucesso' => true, 'mensagem' => 'Senha alterada com sucesso!']);
     exit;
 }
@@ -120,11 +110,10 @@ if ($acao === 'alterar_senha') {
 // AÇÃO: Exportar Dados (LGPD — Art. 18, portabilidade)
 // -----------------------------------------------------------------------
 if ($acao === 'exportar_dados') {
-    $stmt = $conn->prepare("SELECT nome_usuario, email, usuario_login, statusConta, created_at FROM usuario WHERE id_usuario = ?");
+    $stmt = $conn->prepare("SELECT nome_usuario, email, usuario_login, statusConta FROM usuario WHERE id_usuario = ?");
     $stmt->bind_param("i", $id_usuario);
     $stmt->execute();
-    $result = $stmt->get_result();
-    $dados = $result->fetch_assoc();
+    $dados = $stmt->get_result()->fetch_assoc();
     $stmt->close();
     $conn->close();
 
@@ -134,14 +123,13 @@ if ($acao === 'exportar_dados') {
     }
 
     $exportacao = [
-        'aviso_lgpd'     => 'Dados exportados em conformidade com a LGPD (Lei nº 13.709/2018), Art. 18.',
+        'aviso_lgpd'      => 'Dados exportados em conformidade com a LGPD (Lei nº 13.709/2018), Art. 18.',
         'data_exportacao' => date('Y-m-d H:i:s'),
-        'dados_pessoais' => [
-            'nome'           => $dados['nome_usuario'],
-            'email'          => $dados['email'],
-            'usuario_login'  => $dados['usuario_login'],
-            'status_conta'   => $dados['statusConta'],
-            'data_criacao'   => $dados['created_at'] ?? 'Não disponível',
+        'dados_pessoais'  => [
+            'nome'          => $dados['nome_usuario'],
+            'email'         => $dados['email'],
+            'usuario_login' => $dados['usuario_login'],
+            'status_conta'  => $dados['statusConta'],
         ],
     ];
 
@@ -160,12 +148,10 @@ if ($acao === 'deletar_conta') {
         exit;
     }
 
-    // Verifica a senha antes de deletar
     $stmt = $conn->prepare("SELECT usuario_password FROM usuario WHERE id_usuario = ?");
     $stmt->bind_param("i", $id_usuario);
     $stmt->execute();
-    $result = $stmt->get_result();
-    $usuario = $result->fetch_assoc();
+    $usuario = $stmt->get_result()->fetch_assoc();
     $stmt->close();
 
     if (!$usuario || !password_verify($senha_delecao, $usuario['usuario_password'])) {
@@ -177,19 +163,128 @@ if ($acao === 'deletar_conta') {
     $stmt = $conn->prepare("DELETE FROM usuario WHERE id_usuario = ?");
     $stmt->bind_param("i", $id_usuario);
     $stmt->execute();
-
-    if ($stmt->affected_rows !== 1) {
-        echo json_encode(['sucesso' => false, 'mensagem' => 'Erro ao excluir a conta. Tente novamente.']);
-        $stmt->close();
-        $conn->close();
-        exit;
-    }
-
     $stmt->close();
     $conn->close();
 
     session_destroy();
     echo json_encode(['sucesso' => true, 'mensagem' => 'Conta excluída com sucesso. Seus dados foram removidos.']);
+    exit;
+}
+
+// -----------------------------------------------------------------------
+// AÇÃO: Gerar QR Code para configurar 2FA
+// -----------------------------------------------------------------------
+if ($acao === 'gerar_qr_2fa') {
+    $stmt = $conn->prepare("SELECT email, usuario_login FROM usuario WHERE id_usuario = ?");
+    $stmt->bind_param("i", $id_usuario);
+    $stmt->execute();
+    $usuario = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+    $conn->close();
+
+    if (!$usuario) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Usuário não encontrado.']);
+        exit;
+    }
+
+    $google2fa = new Google2FA();
+    $secret    = $google2fa->generateSecretKey();
+
+    // Armazena temporariamente na sessão até confirmação
+    $_SESSION['2fa_setup_secret'] = $secret;
+
+    $qrCodeUrl = $google2fa->getQRCodeUrl('ONGs Browser', $usuario['email'], $secret);
+
+    // Gera SVG do QR code
+    $renderer = new ImageRenderer(new RendererStyle(220), new SvgImageBackEnd());
+    $writer   = new Writer($renderer);
+    $qrSvg    = $writer->writeString($qrCodeUrl);
+
+    echo json_encode([
+        'sucesso' => true,
+        'qr_svg'  => $qrSvg,
+        'secret'  => $secret,
+    ]);
+    exit;
+}
+
+// -----------------------------------------------------------------------
+// AÇÃO: Ativar 2FA — confirma o código e salva o segredo
+// -----------------------------------------------------------------------
+if ($acao === 'ativar_2fa') {
+    if (empty($_SESSION['2fa_setup_secret'])) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Sessão de configuração expirada. Recarregue a página.']);
+        exit;
+    }
+
+    $codigoEnviado = trim($_POST['codigo_totp'] ?? '');
+
+    if (empty($codigoEnviado) || strlen($codigoEnviado) !== 6 || !ctype_digit($codigoEnviado)) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Código inválido.']);
+        exit;
+    }
+
+    $google2fa = new Google2FA();
+    $valido    = $google2fa->verifyKey($_SESSION['2fa_setup_secret'], $codigoEnviado);
+
+    if (!$valido) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Código incorreto. Certifique-se de que o QR code foi escaneado corretamente.']);
+        exit;
+    }
+
+    $secret = $_SESSION['2fa_setup_secret'];
+    unset($_SESSION['2fa_setup_secret']);
+
+    $stmt = $conn->prepare("UPDATE usuario SET codVerificador = ? WHERE id_usuario = ?");
+    $stmt->bind_param("si", $secret, $id_usuario);
+    $stmt->execute();
+    $stmt->close();
+    $conn->close();
+
+    echo json_encode(['sucesso' => true, 'mensagem' => '2FA ativado com sucesso!']);
+    exit;
+}
+
+// -----------------------------------------------------------------------
+// AÇÃO: Desativar 2FA — verifica o código atual e remove o segredo
+// -----------------------------------------------------------------------
+if ($acao === 'desativar_2fa') {
+    $codigoEnviado = trim($_POST['codigo_totp'] ?? '');
+
+    if (empty($codigoEnviado) || strlen($codigoEnviado) !== 6 || !ctype_digit($codigoEnviado)) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Código inválido.']);
+        exit;
+    }
+
+    $stmt = $conn->prepare("SELECT codVerificador FROM usuario WHERE id_usuario = ?");
+    $stmt->bind_param("i", $id_usuario);
+    $stmt->execute();
+    $usuario = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+
+    if (!$usuario || empty($usuario['codVerificador'])) {
+        echo json_encode(['sucesso' => false, 'mensagem' => '2FA não está ativado nesta conta.']);
+        $conn->close();
+        exit;
+    }
+
+    $google2fa = new Google2FA();
+    $valido    = $google2fa->verifyKey($usuario['codVerificador'], $codigoEnviado);
+
+    if (!$valido) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Código incorreto.']);
+        $conn->close();
+        exit;
+    }
+
+    $null = null;
+    $stmt = $conn->prepare("UPDATE usuario SET codVerificador = NULL WHERE id_usuario = ?");
+    $stmt->bind_param("i", $id_usuario);
+    $stmt->execute();
+    $stmt->close();
+    $conn->close();
+
+    echo json_encode(['sucesso' => true, 'mensagem' => '2FA desativado com sucesso.']);
     exit;
 }
 
