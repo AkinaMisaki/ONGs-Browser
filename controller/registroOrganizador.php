@@ -15,17 +15,28 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     if (!empty($rawcpf) && !empty($rawrg) && !empty($rawtelefone)) {
         try {
-            $statusConta = 2; 
             
             if (isset($_SESSION['usuario_id'])) {
                 $idUsuario = $_SESSION['usuario_id']; 
                 
-                $sql = "UPDATE usuario SET cpf = ?, rg = ?, telefone = ?, statusConta = ? WHERE id = ?";
+
+                $sql = "INSERT INTO proprietario_ong (cpf, rg, telefone, fk_usuario) VALUES (?, ?, ?, ?)";
                 $stmt = $conn->prepare($sql);
-                $stmt->bind_param("sssii", $rawcpf, $rawrg, $rawtelefone, $statusConta, $idUsuario);
+                $stmt->bind_param("ssii", $rawcpf, $rawrg, $rawtelefone, $idUsuario);
                 
                 if ($stmt->execute()) {
                     $_SESSION['statusConta'] = 2; 
+
+                    $sql = "
+                        UPDATE usuario
+                        SET statusConta = ?
+                        WHERE id_usuario = ?";
+                    $stmt = $conn->prepare($sql);
+                    $stmt->bind_param("ii", $_SESSION['statusConta'], $idUsuario);
+                    $stmt->execute();
+                    $stmt->close();
+                    $conn->close();
+
                     $resposta = [
                         "sucesso" => true,
                         "mensagem" => "Parabéns! Cadastro de organizador realizado com sucesso."
@@ -33,7 +44,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 } else {
                     $resposta = ["sucesso" => false, "mensagem" => "Erro ao salvar os dados no banco."];
                 }
-
             } else {
                 $resposta = [
                     "sucesso" => false, 
@@ -41,7 +51,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 ];
             }
 
-        } catch (mysqli_sql_exception $e) { ... }
+        } catch (mysqli_sql_exception $e) {
+    $resposta = [
+        "sucesso" => false,
+        "mensagem" => "Erro no banco de dados.",
+        "erro" => $e->getMessage()
+    ];
+    }
 
     } else {
         $resposta = [

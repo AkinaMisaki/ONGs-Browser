@@ -37,11 +37,16 @@ $ongs = searchONGs($query);
 <?php if (!empty($ongs)): ?>
     <?php foreach ($ongs as $ong): ?>
         <div class="card">
-            <h2><?php echo htmlspecialchars($ong['nome_ong']); ?></h2>
-            <p><?php echo htmlspecialchars($ong['descricao']); ?></p>
-            <button onclick="goToONG(<?php echo $ong['id_ong']; ?>)">
-                Ver mais
-            </button>
+            <img class="card-thumb"
+                 src="<?php echo !empty($ong['caminho_arquivo']) ? htmlspecialchars($ong['caminho_arquivo']) : '/universidade/uploads/placeholder.png'; ?>"
+                 alt="<?php echo htmlspecialchars($ong['nome_ong']); ?>">
+            <div class="card-corpo">
+                <div class="card-texto">
+                    <h2><?php echo htmlspecialchars($ong['nome_ong']); ?></h2>
+                    <p><?php echo htmlspecialchars($ong['descricao']); ?></p>
+                </div>
+                <button onclick="goToONG(<?php echo $ong['id_ong']; ?>)">Ver mais</button>
+            </div>
         </div>
     <?php endforeach; ?>
 <?php else: ?>

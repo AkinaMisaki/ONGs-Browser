@@ -31,7 +31,7 @@ if ($_SESSION['statusConta'] === 2) {
         <label>Telefone para contato:</label>
         <input type="text" id="telefone" name="telefone" maxlength="15" placeholder="(11) 99999-9999" required>
         
-        <button type="submit">Cadastrar</button>
+        <button type="button" onclick="realizarCadastro()">Cadastrar</button>
     </form>
     <div id="resposta"></div>
 </div>

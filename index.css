@@ -126,18 +126,17 @@ body {
 }
 
 .card {
-    height: 320px;
+    height: 300px;
     background: white;
     border-radius: 12px;
-    padding: 20px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    min-width: 260px;
-    max-width: 260px;
+    min-width: 300px;
+    max-width: 300px;
     flex: 0 0 auto;
+    overflow: hidden;
 
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
 
     transition: transform 0.2s, box-shadow 0.2s;
 
@@ -151,16 +150,37 @@ body {
     box-shadow: 0 10px 25px rgba(0,0,0,0.15);
 }
 
+.card-thumb {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    display: block;
+    flex-shrink: 0;
+}
+
+.card-corpo {
+    padding: 10px 16px 14px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    justify-content: space-between;
+    overflow: hidden;
+}
+
+.card-texto {
+    flex: 1;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
 .card h2 {
-    font-size: 1.2rem;
-    margin-bottom: 10px;
+    font-size: 1rem;
+    margin-bottom: 5px;
     color: #0d47a1;
 }
 
 .card p {
-    font-size: 0.95rem;
-    flex: 1;
-    margin-bottom: 15px;
+    font-size: 0.85rem;
     color: #555;
     overflow: hidden;
     display: -webkit-box;
@@ -173,11 +193,11 @@ body {
     background: #0d47a1;
     color: white;
     border: none;
-    padding: 10px;
+    padding: 8px 10px;
     border-radius: 6px;
     cursor: pointer;
     transition: 0.3s;
-    margin-top: auto;
+    font-size: 0.85rem;
 }
 
 .card button:hover {

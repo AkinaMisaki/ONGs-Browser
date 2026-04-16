@@ -3,3 +3,5 @@ LICENSE
 README.md
 .env
 generate_hash.php
+uploads/*
+!uploads/.gitkeep

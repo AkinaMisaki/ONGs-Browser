@@ -7,12 +7,12 @@ function searchONGs($query) {
     $query = trim($query);
 
     if ($query === '') {
-        $sql = "SELECT id_ong, nome_ong, descricao FROM ong LIMIT 50"; //Ver depois se fica melhor sem limite, ou se é melhor fazer uma paginação
+        $sql = "SELECT id_ong, nome_ong, descricao, caminho_arquivo FROM ong"; //Ver depois se fica melhor sem limite, ou se é melhor fazer uma paginação
         $stmt = $conn->prepare($sql);
     } else {
-        $sql = "SELECT id_ong, nome_ong, descricao 
-                FROM ong 
-                WHERE nome_ong LIKE ? 
+        $sql = "SELECT id_ong, nome_ong, descricao, caminho_arquivo
+                FROM ong
+                WHERE nome_ong LIKE ?
                    OR descricao LIKE ?
                 LIMIT 50";
         $stmt = $conn->prepare($sql);

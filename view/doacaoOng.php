@@ -5,7 +5,7 @@ session_start();
 // Dica: 'doador_autorizado' é um ótimo controle, certifique-se de que isso existe no seu banco na hora do login!
 if (!isset($_SESSION['usuario_id']) || $_SESSION['nivel_acesso'] !== 'doador_autorizado') {
     // Redireciona de volta para uma página segura
-    header("Location: ../view/dashboard_comum.php?erro=acesso_negado");
+    header("Location: ../view/dashboard_comum.php?erro=acesso_negado"); //Arrumar a URL de redirecionamento e permissões depois
     exit();
 }
 ?>

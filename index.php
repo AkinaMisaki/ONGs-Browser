@@ -1,7 +1,8 @@
 <?php
+session_start();
 include __DIR__ . '/config.php';
 
-$sql = "SELECT id_ong, nome_ong, descricao FROM ong ORDER BY RAND() LIMIT 20";
+$sql = "SELECT id_ong, nome_ong, descricao, caminho_arquivo FROM ong ORDER BY RAND() LIMIT 20";
 $result = $conn->query($sql);
 ?>
 
@@ -44,12 +45,23 @@ $result = $conn->query($sql);
 
         if ($result->num_rows > 0) {
             while($row = $result->fetch_assoc()) {
+                $src = !empty($row['caminho_arquivo'])
+                    ? htmlspecialchars($row['caminho_arquivo'])
+                    : '/universidade/uploads/placeholder.png';
+                $alt = htmlspecialchars($row['nome_ong']);
+                $imgHtml = "<img class=\"card-thumb\" src=\"{$src}\" alt=\"{$alt}\">";
+
                 echo "<div class='card' style='animation-delay: {$delay}s'>";
+                echo $imgHtml;
+                echo "<div class='card-corpo'>";
+                echo "<div class='card-texto'>";
                 echo "<h2>" . htmlspecialchars($row['nome_ong']) . "</h2>";
                 echo "<p>" . htmlspecialchars($row['descricao']) . "</p>";
+                echo "</div>";
                 echo "<button onclick=\"goToONG(" . $row['id_ong'] . ")\">Ver mais</button>";
                 echo "</div>";
-                
+                echo "</div>";
+
                 $delay += 0.1;
             }
         } else {

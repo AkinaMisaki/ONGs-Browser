@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Criação de Ongs</title>
-    <link rel="stylesheet" href="criacaoOng.css">
+    <link rel="stylesheet" href="css/criacaoOng.css">
 </head>
 <body>
 
@@ -31,6 +31,6 @@
         <a href="registrar.php">Novo por Aqui? Cadastre-se!</a>
     </main>
 
-    <script src="../js/criacao_ong.js"></script>
+    <script src="../js/criacao_ongs.js"></script>
 </body>
 </html>

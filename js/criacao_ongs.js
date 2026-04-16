@@ -35,6 +35,12 @@ function validarEAtribuirArquivo(arquivo) {
         fileInput.value = "";
         return;
     }
+    const tamanhoMaxMB = 20;
+    if (arquivo.size > tamanhoMaxMB * 1024 * 1024) {
+        alert(`A imagem deve ter no máximo ${tamanhoMaxMB}MB. O arquivo selecionado tem ${(arquivo.size / 1024 / 1024).toFixed(1)}MB.`);
+        fileInput.value = "";
+        return;
+    }
     const dataTransfer = new DataTransfer();
     dataTransfer.items.add(arquivo);
     fileInput.files = dataTransfer.files;
@@ -64,7 +70,7 @@ async function realizarCadastroUsuario() {
     dadosFormulario.append('imagemOng', arquivoImagem);
 
     try {
-        const resposta = await fetch('controller/criacaoOng.php', {
+        const resposta = await fetch('../controller/criacaoOngcontroller.php', {
             method: 'POST',
             body: dadosFormulario
         });
@@ -81,7 +87,7 @@ async function realizarCadastroUsuario() {
             alert('Erro: ' + resultado.mensagem);
         }
     } catch (erro) {
-        alert('Erro crítico: Não foi possível conectar ao servidor.');
+        alert('Erro crítico: Não foi possível conectar ao servidor.' + erro);
         console.error("Detalhes do erro:", erro);
     }
 }

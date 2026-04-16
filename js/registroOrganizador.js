@@ -1,6 +1,4 @@
-document.getElementById('meuForm').addEventListener('submit', async function(evento) {
-    evento.preventDefault(); // Evita que a página recarregue 
-
+async function realizarCadastro(){
     // Pegando os valores
     const campoCpf = document.getElementById('cpf').value.trim();
     const campoRg = document.getElementById('rg').value.trim();
@@ -19,7 +17,7 @@ document.getElementById('meuForm').addEventListener('submit', async function(eve
     dadosFormulario.append('telefone', campoTelefone);
 
     try {
-        const resposta = await fetch('controller\registroOrganizador.php', {
+        const resposta = await fetch('../controller/registroOrganizador.php', {
             method: 'POST',
             body: dadosFormulario
         });
@@ -38,4 +36,4 @@ document.getElementById('meuForm').addEventListener('submit', async function(eve
     } catch (erro) {
         alert('Erro crítico: Falha de comunicação com o servidor.');
     }
-});
+}

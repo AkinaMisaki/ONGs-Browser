@@ -1,6 +1,7 @@
 <?php
 header('Content-Type: application/json; charset=utf-8');
 include __DIR__ . '/../config.php';
+session_start();
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
@@ -25,18 +26,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             if (move_uploaded_file($arquivo['tmp_name'], $caminhoCompleto)) {
                 try {
-                    $sql = "INSERT INTO ong (nome_ong, descricao, caminho_arquivo) VALUES (?, ?, ?)";
+                    $sql = "INSERT INTO ong (nome_ong, descricao, caminho_arquivo, fk_proprietario_id) VALUES (?, ?, ?, ?)";
                     $stmt = $conn->prepare($sql);
-                    $stmt->bind_param("sss", $rawOng, $rawDescricao, $caminhoBanco);
+                    $stmt->bind_param("sssi", $rawOng, $rawDescricao, $caminhoBanco, $_SESSION['id_prop']);
                     $stmt->execute();
-                    
+
                     $resposta = ["sucesso" => true, "mensagem" => "Cadastro e upload realizados com sucesso!"];
                 } catch (mysqli_sql_exception $e) {
                     if (file_exists($caminhoCompleto)) unlink($caminhoCompleto);
                     if ($e->getCode() == 1062) {
                         $resposta = ["sucesso" => false, "mensagem" => "Erro: Nome já cadastrado."];
                     } else {
-                        $resposta = ["sucesso" => false, "mensagem" => "Erro no banco de dados."];
+                        $resposta = ["sucesso" => false, "mensagem" => "Erro no banco de dados." . $e];
                     }
                 }
             } else {
