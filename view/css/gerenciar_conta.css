@@ -253,6 +253,33 @@ main > h1 {
     background-color: #138496 !important;
 }
 
+/* --- Card Proprietário --- */
+.card-proprietario {
+    border-left: 4px solid #28a745;
+}
+
+.card-proprietario h2 {
+    color: #1e7e34;
+    border-bottom-color: #c3e6cb;
+}
+
+.btn-proprietario {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 0.85rem;
+    font-size: 1rem;
+    cursor: pointer;
+    border-radius: 4px;
+    font-weight: bold;
+    transition: background 0.3s;
+    width: 100%;
+}
+
+.btn-proprietario:hover {
+    background-color: #218838;
+}
+
 /* --- Card Perigo --- */
 .card-perigo {
     border-left: 4px solid #dc3545;

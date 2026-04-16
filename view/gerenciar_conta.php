@@ -21,6 +21,13 @@ if ($result->num_rows !== 1) {
 
 $usuario = $result->fetch_assoc();
 $stmt->close();
+
+$stmtProp = $conn->prepare("SELECT id_prop FROM proprietario_ong WHERE fk_usuario = ? LIMIT 1");
+$stmtProp->bind_param("i", $_SESSION['usuario_id']);
+$stmtProp->execute();
+$eProprietario = $stmtProp->get_result()->num_rows > 0;
+$stmtProp->close();
+
 $conn->close();
 
 $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
@@ -37,11 +44,13 @@ $tem2fa = !empty($usuario['codVerificador']);
 <body>
 
     <div class="barra-fixa">
-        <span>Gerenciar Conta</span>
-        <nav>
-            <button onclick="window.location.href='/universidade/index.php'">Início</button>
-            <button onclick="realizarLogout()" class="btn-logout">Sair</button>
-        </nav>
+        <div class="header-container">
+            <h1>Gerenciar Conta</h1>
+            <nav>
+                <button onclick="window.location.href='/universidade/index.php'">Início</button>
+                <button onclick="realizarLogout()" class="btn-logout">Sair</button>
+            </nav>
+        </div>
     </div>
 
     <main>
@@ -153,6 +162,26 @@ $tem2fa = !empty($usuario['codVerificador']);
                         <button type="submit">Confirmar e Ativar</button>
                     </form>
                 </div>
+            <?php endif; ?>
+        </section>
+
+        <!-- Tornar-se Proprietário -->
+        <section class="card card-proprietario">
+            <h2>Gerenciar ONGs</h2>
+            <?php if ($eProprietario): ?>
+                <p class="lgpd-descricao">
+                    Você já é um proprietário registrado. Acesse para criar e gerenciar suas ONGs.
+                </p>
+                <button type="button" class="btn-proprietario" onclick="window.location.href='criacao_ong.php'">
+                    Criar uma ONG
+                </button>
+            <?php else: ?>
+                <p class="lgpd-descricao">
+                    Registre-se como proprietário para poder criar e gerenciar ONGs na plataforma.
+                </p>
+                <button type="button" class="btn-proprietario" onclick="window.location.href='registroOrganizadores.php'">
+                    Tornar-se Proprietário de ONG
+                </button>
             <?php endif; ?>
         </section>
 
