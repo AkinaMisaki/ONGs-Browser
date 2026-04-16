@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (resultado.sucesso) {
             document.title = resultado.nome_ong + ' — ONGs Browser';
             document.getElementById('ong-nome').textContent = resultado.nome_ong;
+            document.getElementById('ong-proprietario').textContent = 'Proprietário: ' + resultado.proprietario;
             document.getElementById('ong-descricao').textContent = resultado.descricao;
 
             const img = document.getElementById('ong-imagem');

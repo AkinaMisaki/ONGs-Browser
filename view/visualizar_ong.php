@@ -21,6 +21,7 @@
         </div>
         <div class="ong-info">
             <h1 id="ong-nome"></h1>
+            <p id="ong-proprietario" class="ong-proprietario"></p>
             <p id="ong-descricao"></p>
             <div class="ong-acoes">
                 <button class="btn-voltar" onclick="history.back()">&#8592; Voltar</button>

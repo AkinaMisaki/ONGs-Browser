@@ -9,7 +9,11 @@ if ($id <= 0) {
     exit();
 }
 
-$sql = "SELECT nome_ong, descricao, caminho_arquivo FROM ong WHERE id_ong = ?";
+$sql = "SELECT o.nome_ong, o.descricao, o.caminho_arquivo, u.nome_usuario
+        FROM ong o
+        JOIN proprietario_ong p ON p.id_prop = o.fk_proprietario_id
+        JOIN usuario u ON u.id_usuario = p.fk_usuario
+        WHERE o.id_ong = ?";
 $stmt = $conn->prepare($sql);
 
 if (!$stmt) {
@@ -27,6 +31,7 @@ if ($linha = $resultado->fetch_assoc()) {
         'nome_ong'        => $linha['nome_ong'],
         'descricao'       => $linha['descricao'],
         'caminho_arquivo' => $linha['caminho_arquivo'],
+        'proprietario'    => $linha['nome_usuario'],
     ]);
 } else {
     echo json_encode(['sucesso' => false, 'mensagem' => 'ONG não encontrada.']);

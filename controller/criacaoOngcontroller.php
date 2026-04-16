@@ -8,13 +8,25 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $rawOng = (isset($_POST['Ong'])) ? htmlspecialchars(trim($_POST['Ong'])) : '';
     $rawDescricao = (isset($_POST['Descricao'])) ? htmlspecialchars(trim($_POST['Descricao'])) : '';
 
+    $rawProprietarioId = 0;
+    if (!empty($_SESSION['usuario_id'])) {
+        $stmtProp = $conn->prepare("SELECT id_prop FROM proprietario_ong WHERE fk_usuario = ? LIMIT 1");
+        $stmtProp->bind_param("i", $_SESSION['usuario_id']);
+        $stmtProp->execute();
+        $resProp = $stmtProp->get_result()->fetch_assoc();
+        $stmtProp->close();
+        if ($resProp) {
+            $rawProprietarioId = (int) $resProp['id_prop'];
+        }
+    }
+
     $diretorioDestino = __DIR__ . '/../uploads/'; 
     
     if (!is_dir($diretorioDestino)) {
         mkdir($diretorioDestino, 0755, true);
     }
     
-    if (!empty($rawOng) && !empty($rawDescricao) && isset($_FILES['imagemOng'])) {
+    if (!empty($rawOng) && !empty($rawDescricao) && $rawProprietarioId > 0 && isset($_FILES['imagemOng'])) {
         
         $arquivo = $_FILES['imagemOng'];
 
@@ -28,7 +40,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 try {
                     $sql = "INSERT INTO ong (nome_ong, descricao, caminho_arquivo, fk_proprietario_id) VALUES (?, ?, ?, ?)";
                     $stmt = $conn->prepare($sql);
-                    $stmt->bind_param("sssi", $rawOng, $rawDescricao, $caminhoBanco, $_SESSION['id_prop']);
+                    $stmt->bind_param("sssi", $rawOng, $rawDescricao, $caminhoBanco, $rawProprietarioId);
                     $stmt->execute();
 
                     $resposta = ["sucesso" => true, "mensagem" => "Cadastro e upload realizados com sucesso!"];
