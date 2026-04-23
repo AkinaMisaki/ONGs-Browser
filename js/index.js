@@ -28,8 +28,13 @@ document.addEventListener('DOMContentLoaded', () => {
     grid.style.overflow = 'hidden';
     grid.style.scrollBehavior = 'auto';
 
-    let current = total;
-    let target  = total;
+    // Center a card in the visible area on load
+    const visibleWidth = grid.offsetWidth;
+    const cardW = cards[0].offsetWidth;
+    const centerAdjust = Math.round((visibleWidth / 2) - (cardW / 2));
+
+    let current = total - centerAdjust;
+    let target  = current;
     grid.scrollLeft = current;
 
     let rafId = null;
