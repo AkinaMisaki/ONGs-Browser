@@ -1,4 +1,5 @@
-async function realizarLogin() {
+async function realizarLogin(event) {
+    event.preventDefault();
     // Pegando os valores
     const campoUsuario = document.getElementById('user_acess').value.trim();
     const campoSenha = document.getElementById('passCheck').value.trim();

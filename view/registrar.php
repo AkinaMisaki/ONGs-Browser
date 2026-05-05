@@ -16,7 +16,7 @@
         
         <div id="mensagem-alerta"></div>
 
-        <form id="formContato">
+        <form id="formContato" onsubmit="realizarCadastroUsuario(event)">
             <label for="user_name">Nome:</label>
             <input type="text" id="new_user_name" name="userName" placeholder="Digite seu nome">
 
@@ -31,7 +31,7 @@
             <div class="alerta-senha">
                 Lembre-se: sua senha deve ter no mínimo 8 caracteres, incluindo letras maiúsculas, minúsculas, números e pelo menos um caractere especial (!, @, #, etc).
             </div>
-            <button type="button" onclick="realizarCadastroUsuario()">Cadastrar</button>
+            <button type="submit">Cadastrar</button>
         </form>
     </main>
 

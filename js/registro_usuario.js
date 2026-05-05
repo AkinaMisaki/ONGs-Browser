@@ -1,4 +1,5 @@
-async function realizarCadastroUsuario() {
+async function realizarCadastroUsuario(event) {
+    event.preventDefault();
     // Pegando os valores
     const campoUsuario = document.getElementById('new_user_acess').value.trim();
     const campoEmail = document.getElementById('new_user_email').value.trim();

@@ -13,6 +13,7 @@ $token = htmlspecialchars(trim($_GET['token'] ?? ''), ENT_QUOTES, 'UTF-8');
         #mensagem { text-align: center; margin-bottom: 1rem; font-size: 1rem; }
         #mensagem.sucesso { color: #155724; }
         #mensagem.erro    { color: #721c24; }
+        #mensagem.info    { color: #0056b3; }
         #acoes { text-align: center; margin-top: 1.2rem; }
         #acoes a { color: #0056b3; font-weight: bold; text-decoration: underline; }
     </style>
@@ -44,13 +45,20 @@ $token = htmlspecialchars(trim($_GET['token'] ?? ''), ENT_QUOTES, 'UTF-8');
 
         const erros = {
             'link_invalido': 'Link de ativação inválido. Certifique-se de usar o link enviado ao seu e-mail.',
-            'link_expirado': 'Link expirado. Refaça o cadastro para receber um novo e-mail de ativação.',
             'ja_ativa':      'Esta conta já foi ativada. Faça login normalmente.',
         };
 
         try {
             const resp   = await fetch('../controller/ativar_conta.php', { method: 'POST', body: form });
             const result = await resp.json();
+
+            if (result.mensagem === 'link_reenviado') {
+                document.getElementById('icone').textContent    = '📧';
+                document.getElementById('mensagem').className   = 'info';
+                document.getElementById('mensagem').textContent = 'Seu link de ativação expirou — enviamos um novo para o seu e-mail. Verifique sua caixa de entrada.';
+                document.getElementById('acoes').style.display  = 'block';
+                return;
+            }
 
             document.getElementById('icone').textContent = result.sucesso ? '✅' : '❌';
             document.getElementById('mensagem').className   = result.sucesso ? 'sucesso' : 'erro';

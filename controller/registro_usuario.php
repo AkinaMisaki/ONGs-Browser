@@ -43,19 +43,18 @@ $activationToken   = bin2hex(random_bytes(32));
 $activationExpire  = date("Y-m-d H:i:s", strtotime("+24 hours"));
 
 try {
-    $sql = "INSERT INTO usuario (nome_usuario, email, usuario_login, usuario_password, statusConta, reset_token, reset_expire)
-            VALUES (?, ?, ?, ?, ?, ?, ?)";
+    $sql = "INSERT INTO usuario (nome_usuario, email, usuario_login, usuario_password)
+            VALUES (?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param(
-        "ssssiss",
-        $rawNome,
-        $rawEmail,
-        $rawUsuario,
-        $senhaCriptografada,
-        $statusConta,
-        $activationToken,
-        $activationExpire
-    );
+    $stmt->bind_param("ssss", $rawNome, $rawEmail, $rawUsuario, $senhaCriptografada);
+    $stmt->execute();
+    $novoId = $conn->insert_id;
+    $stmt->close();
+
+    $sql = "INSERT INTO usuario_verificacao (fk_usuario, statusConta, reset_token, reset_expire)
+            VALUES (?, ?, ?, ?)";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("iiss", $novoId, $statusConta, $activationToken, $activationExpire);
     $stmt->execute();
     $stmt->close();
 } catch (mysqli_sql_exception $e) {

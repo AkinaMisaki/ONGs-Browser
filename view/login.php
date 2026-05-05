@@ -13,7 +13,7 @@
     <main>
         <h1>Login de Usuário</h1>
 
-        <form id="formContato">
+        <form id="formContato" onsubmit="realizarLogin(event)">
             <label for="user_acess">Usuário:</label>
             <input type="text" id="user_acess" name="userAcess" placeholder="Digite seu usuário">
 
@@ -24,7 +24,7 @@
                 <a href="recuperar_senha.html" class="link-esqueceu">Esqueceu a senha?</a>
             </div>
 
-            <button type="button" onclick="realizarLogin()">Login</button>
+            <button type="submit">Login</button>
         </form>
         
         <div class="links-externos">

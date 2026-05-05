@@ -35,7 +35,7 @@ if ($password !== $passwordConfirm) {
 }
 
 // Valida o token no BD
-$stmt = $conn->prepare("SELECT id_usuario, reset_expire FROM usuario WHERE reset_token = ?");
+$stmt = $conn->prepare("SELECT fk_usuario AS id_usuario, reset_expire FROM usuario_verificacao WHERE reset_token = ?");
 $stmt->bind_param("s", $token);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -59,11 +59,7 @@ if (strtotime($user['reset_expire']) < time()) {
 // Criptografa Senha e Atualiza no BD
 $options = ['memory_cost' => 65536, 'time_cost' => 4, 'threads' => 2];
 $newPassword = password_hash($rawSenha, PASSWORD_ARGON2ID, $options);
-$stmt = $conn->prepare("
-    UPDATE usuario
-    SET usuario_password = ?, reset_token = NULL, reset_expire = NULL
-    WHERE id_usuario = ?
-");
+$stmt = $conn->prepare("UPDATE usuario SET usuario_password = ? WHERE id_usuario = ?");
 $stmt->bind_param("si", $newPassword, $user['id_usuario']);
 $stmt->execute();
 
@@ -73,7 +69,11 @@ if ($stmt->affected_rows !== 1) {
     $conn->close();
     exit;
 }
+$stmt->close();
 
+$stmt = $conn->prepare("UPDATE usuario_verificacao SET reset_token = NULL, reset_expire = NULL WHERE fk_usuario = ?");
+$stmt->bind_param("i", $user['id_usuario']);
+$stmt->execute();
 $stmt->close();
 $conn->close();
 

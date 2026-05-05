@@ -28,9 +28,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     $_SESSION['statusConta'] = 2; 
 
                     $sql = "
-                        UPDATE usuario
+                        UPDATE usuario_verificacao
                         SET statusConta = ?
-                        WHERE id_usuario = ?";
+                        WHERE fk_usuario = ?";
                     $stmt = $conn->prepare($sql);
                     $stmt->bind_param("ii", $_SESSION['statusConta'], $idUsuario);
                     $stmt->execute();

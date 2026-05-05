@@ -25,7 +25,7 @@ if (empty($codigoEnviado) || strlen($codigoEnviado) !== 6 || !ctype_digit($codig
 }
 
 // Busca o segredo TOTP do usuário
-$stmt = $conn->prepare("SELECT codVerificador FROM usuario WHERE id_usuario = ? LIMIT 1");
+$stmt = $conn->prepare("SELECT codVerificador FROM usuario_verificacao WHERE fk_usuario = ? LIMIT 1");
 $stmt->bind_param("i", $_SESSION['2fa_pending_id']);
 $stmt->execute();
 $result  = $stmt->get_result();

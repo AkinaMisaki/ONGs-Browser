@@ -21,9 +21,10 @@ if (empty($usuarioSeguro) || empty($rawSenha)) {
     exit;
 }
 
-$sql = "SELECT id_usuario, usuario_login, usuario_password, statusConta, codVerificador 
-        FROM usuario
-        WHERE usuario_login = ?
+$sql = "SELECT u.id_usuario, u.usuario_login, u.usuario_password, uv.statusConta, uv.codVerificador
+        FROM usuario u
+        INNER JOIN usuario_verificacao uv ON uv.fk_usuario = u.id_usuario
+        WHERE u.usuario_login = ?
         LIMIT 1";
 
 try {

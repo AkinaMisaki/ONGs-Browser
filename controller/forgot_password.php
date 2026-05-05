@@ -30,7 +30,7 @@ if ($result->num_rows === 1) {
     $token  = bin2hex(random_bytes(32));
     $expire = date("Y-m-d H:i:s", strtotime("+1 hour"));
 
-    $stmt = $conn->prepare("UPDATE usuario SET reset_token=?, reset_expire=? WHERE email=?");
+    $stmt = $conn->prepare("UPDATE usuario_verificacao uv INNER JOIN usuario u ON u.id_usuario = uv.fk_usuario SET uv.reset_token=?, uv.reset_expire=? WHERE u.email=?");
     $stmt->bind_param("sss", $token, $expire, $email);
     $stmt->execute();
 

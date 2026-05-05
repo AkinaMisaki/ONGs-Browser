@@ -1,46 +1,174 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
 body {
-    font-family: 'Segoe UI', Arial, sans-serif;
-    background-color: #f0f2f5;
+    background-color: #f4f4f9;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    padding-top: 80px;
+}
+
+/* --- Header --- */
+.barra-fixa {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #0d47a1;
     display: flex;
     justify-content: center;
+    padding: 1rem 2rem;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    height: 100vh;
-    margin: 0;
-}
-
-.card {
-    background: #fff;
-    padding: 25px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    width: 300px;
-}
-
-h3 { text-align: center; color: #333; }
-
-label { display: block; margin-top: 10px; font-size: 14px; color: #555; }
-
-input {
     width: 100%;
-    padding: 10px;
-    margin-top: 5px;
+    max-width: 1200px;
+}
+
+.header-container h1 {
+    color: white;
+    margin: 0;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.barra-fixa nav {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.barra-fixa nav button {
+    background-color: #1565c0;
+    color: white;
+    border: 1px solid #0d47a1;
+    padding: 0.6rem 1.2rem;
+    font-size: 1rem;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.3s;
+}
+
+.barra-fixa nav button:hover {
+    background-color: #1e88e5;
+}
+
+/* --- Layout --- */
+main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem;
+    gap: 1.5rem;
+}
+
+main > h1 {
+    color: #0056b3;
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+}
+
+/* --- Card --- */
+.card {
+    background-color: #ffffff;
+    border: 1px solid #dce3ee;
+    border-left: 4px solid #0056b3;
+    border-radius: 8px;
+    padding: 1.8rem 2rem;
+    width: 100%;
+    max-width: 560px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
+}
+
+.card h2 {
+    color: #0056b3;
+    font-size: 1.2rem;
+    margin-bottom: 1.2rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 2px solid #e0e8f5;
+}
+
+.card form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+}
+
+.card form label {
+    font-weight: bold;
+    color: #444;
+    font-size: 0.95rem;
+}
+
+.card form input[type="text"] {
+    padding: 0.75rem;
     border: 1px solid #ccc;
     border-radius: 4px;
-    box-sizing: border-box;
+    font-size: 1rem;
+    color: #333;
+    width: 100%;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-button {
-    width: 100%;
-    padding: 12px;
-    margin-top: 20px;
-    background-color: #007bff;
+.card form input[type="text"]:focus {
+    outline: none;
+    border-color: #0056b3;
+    box-shadow: 0 0 0 3px rgba(0, 86, 179, 0.15);
+}
+
+.card form button[type="button"] {
+    background-color: #28a745;
     color: white;
     border: none;
-    border-radius: 4px;
+    padding: 0.85rem;
+    font-size: 1rem;
     cursor: pointer;
-    font-size: 16px;
+    border-radius: 4px;
+    margin-top: 0.4rem;
+    font-weight: bold;
+    transition: background 0.3s;
+    width: 100%;
 }
 
-button:hover { background-color: #0056b3; }
+.card form button[type="button"]:hover {
+    background-color: #218838;
+}
 
-#resposta { margin-top: 15px; text-align: center; font-size: 14px; }
+/* --- Mensagem de Feedback --- */
+.mensagem-global {
+    width: 100%;
+    max-width: 560px;
+    padding: 0.9rem 1.2rem;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: bold;
+    text-align: center;
+}
+
+.mensagem-global.sucesso {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.mensagem-global.erro {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.mensagem-global.hidden {
+    display: none;
+}

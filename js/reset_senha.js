@@ -1,4 +1,5 @@
-async function realizarCadastroUsuario() {
+async function realizarCadastroUsuario(event) {
+    event.preventDefault();
     const campoEmail = document.getElementById('new_mailCheck').value.trim();
 
     if (campoEmail === '') {

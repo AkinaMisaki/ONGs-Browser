@@ -1,4 +1,5 @@
-async function realizarCadastro(){
+async function realizarCadastro(event) {
+    event.preventDefault();
     // Pegando os valores
     const campoCpf = document.getElementById('cpf').value.trim();
     const campoRg = document.getElementById('rg').value.trim();
@@ -24,16 +25,19 @@ async function realizarCadastro(){
 
         const resultado = await resposta.json();
 
-        //php
         if (resultado.sucesso) {
-            alert(resultado.mensagem); 
-            document.getElementById('meuForm').reset();
-            
+            window.location.href = 'gerenciar_conta.php';
         } else {
-            alert('Erro no Cadastro:\n' + resultado.mensagem);
+            mostrarMensagem(resultado.mensagem, 'erro');
         }
 
     } catch (erro) {
-        alert('Erro crítico: Falha de comunicação com o servidor.');
+        mostrarMensagem('Erro crítico: Falha de comunicação com o servidor.', 'erro');
     }
+}
+
+function mostrarMensagem(texto, tipo) {
+    const el = document.getElementById('mensagem-global');
+    el.textContent = texto;
+    el.className = 'mensagem-global ' + tipo;
 }

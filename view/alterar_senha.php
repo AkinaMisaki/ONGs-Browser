@@ -9,7 +9,7 @@ if (!$token) {
     exit;
 }
 
-$stmt = $conn->prepare("SELECT id_usuario, reset_expire FROM usuario WHERE reset_token = ?");
+$stmt = $conn->prepare("SELECT fk_usuario AS id_usuario, reset_expire FROM usuario_verificacao WHERE reset_token = ?");
 $stmt->bind_param("s", $token);
 $stmt->execute();
 $result = $stmt->get_result();

@@ -8,7 +8,7 @@ if (!isset($_SESSION['usuario_id'])) {
 
 include __DIR__ . '/../config.php';
 
-$stmt = $conn->prepare("SELECT nome_usuario, email, usuario_login, codVerificador FROM usuario WHERE id_usuario = ?");
+$stmt = $conn->prepare("SELECT u.nome_usuario, u.email, u.usuario_login, uv.codVerificador FROM usuario u INNER JOIN usuario_verificacao uv ON uv.fk_usuario = u.id_usuario WHERE u.id_usuario = ?");
 $stmt->bind_param("i", $_SESSION['usuario_id']);
 $stmt->execute();
 $result = $stmt->get_result();

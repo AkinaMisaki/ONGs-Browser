@@ -110,7 +110,7 @@ if ($acao === 'alterar_senha') {
 // AÇÃO: Exportar Dados (LGPD — Art. 18, portabilidade)
 // -----------------------------------------------------------------------
 if ($acao === 'exportar_dados') {
-    $stmt = $conn->prepare("SELECT nome_usuario, email, usuario_login, statusConta FROM usuario WHERE id_usuario = ?");
+    $stmt = $conn->prepare("SELECT u.nome_usuario, u.email, u.usuario_login, uv.statusConta FROM usuario u INNER JOIN usuario_verificacao uv ON uv.fk_usuario = u.id_usuario WHERE u.id_usuario = ?");
     $stmt->bind_param("i", $id_usuario);
     $stmt->execute();
     $dados = $stmt->get_result()->fetch_assoc();
@@ -235,7 +235,7 @@ if ($acao === 'ativar_2fa') {
     $secret = $_SESSION['2fa_setup_secret'];
     unset($_SESSION['2fa_setup_secret']);
 
-    $stmt = $conn->prepare("UPDATE usuario SET codVerificador = ? WHERE id_usuario = ?");
+    $stmt = $conn->prepare("UPDATE usuario_verificacao SET codVerificador = ? WHERE fk_usuario = ?");
     $stmt->bind_param("si", $secret, $id_usuario);
     $stmt->execute();
     $stmt->close();
@@ -256,7 +256,7 @@ if ($acao === 'desativar_2fa') {
         exit;
     }
 
-    $stmt = $conn->prepare("SELECT codVerificador FROM usuario WHERE id_usuario = ?");
+    $stmt = $conn->prepare("SELECT codVerificador FROM usuario_verificacao WHERE fk_usuario = ?");
     $stmt->bind_param("i", $id_usuario);
     $stmt->execute();
     $usuario = $stmt->get_result()->fetch_assoc();
@@ -278,7 +278,7 @@ if ($acao === 'desativar_2fa') {
     }
 
     $null = null;
-    $stmt = $conn->prepare("UPDATE usuario SET codVerificador = NULL WHERE id_usuario = ?");
+    $stmt = $conn->prepare("UPDATE usuario_verificacao SET codVerificador = NULL WHERE fk_usuario = ?");
     $stmt->bind_param("i", $id_usuario);
     $stmt->execute();
     $stmt->close();

@@ -21,7 +21,7 @@
 
     <div id="mensagem-alerta"></div>
 
-    <form id="formContato">
+    <form id="formContato" onsubmit="realizarCadastroUsuario(event)">
         <label for="new_passCheck">Email:</label>
         <input 
             type="email" 
@@ -30,7 +30,7 @@
             placeholder="Digite seu email"
             autocomplete="email"
         >
-        <button type="button" onclick="realizarCadastroUsuario()">Enviar</button>
+        <button type="submit">Enviar</button>
     </form>
 
     <div class="form-links">
