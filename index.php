@@ -2,6 +2,11 @@
 session_start();
 include __DIR__ . '/config.php';
 
+if (!isset($_SESSION['captcha_aprovado']) || $_SESSION['captcha_aprovado'] !== true) {
+    header('Location: view/captcha_view.php');
+    exit; 
+}
+
 $sql = "SELECT id_ong, nome_ong, descricao, caminho_arquivo FROM ong ORDER BY RAND() LIMIT 20";
 $result = $conn->query($sql);
 ?>
