@@ -1,0 +1,1 @@
+Essa pasta será utilizada para guardar ferramentas que são de uso único, ou que iriam para a pasta config, não utilize ela como a pasta config real.
