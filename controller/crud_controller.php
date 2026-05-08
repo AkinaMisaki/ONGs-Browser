@@ -40,12 +40,16 @@ header('Content-Type: application/json; charset=utf-8');
 $action = $_REQUEST['action'] ?? '';
 
 switch ($action) {
-    case 'list_tables':    listTables();    break;
-    case 'describe_table': describeTable(); break;
-    case 'list_records':   listRecords();   break;
-    case 'create_record':  createRecord();  break;
-    case 'update_record':  updateRecord();  break;
-    case 'delete_record':  deleteRecord();  break;
+    case 'list_tables':      listTables();      break;
+    case 'describe_table':   describeTable();   break;
+    case 'list_records':     listRecords();     break;
+    case 'create_record':    createRecord();    break;
+    case 'update_record':    updateRecord();    break;
+    case 'delete_record':    deleteRecord();    break;
+    case 'broadcast_send':   broadcastSend();   break;
+    case 'banip_list':       banIpList();       break;
+    case 'banip_add':        banIpAdd();        break;
+    case 'banip_remove':     banIpRemove();     break;
     default:
         echo json_encode(['sucesso' => false, 'mensagem' => 'Ação inválida.']);
 }
@@ -312,6 +316,139 @@ function deleteRecord() {
     } else {
         error_log($conn->error);
         echo json_encode(['sucesso' => false, 'mensagem' => 'Erro ao excluir registro.']);
+    }
+    $stmt->close();
+}
+
+// ── Broadcast via Telegram ─────────────────────────────────────────────────
+// Envia uma mensagem para todos os usuários com telegram_id cadastrado.
+function broadcastSend() {
+    global $conn, $env;
+
+    $message = trim($_POST['message'] ?? '');
+    if ($message === '') {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'A mensagem não pode estar vazia.']);
+        return;
+    }
+
+    $botToken = $env['TELEGRAM_BOT_TOKEN'] ?? '';
+    if (empty($botToken)) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Token do bot Telegram não configurado.']);
+        return;
+    }
+
+    // Busca todos os telegram_ids cadastrados
+    $result = $conn->query("SELECT telegram_id FROM usuario_verificacao WHERE telegram_id IS NOT NULL AND telegram_id != ''");
+    if (!$result) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Erro ao buscar usuários do Telegram.']);
+        return;
+    }
+
+    $chatIds = [];
+    while ($row = $result->fetch_assoc()) {
+        $chatIds[] = $row['telegram_id'];
+    }
+
+    if (empty($chatIds)) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Nenhum usuário com Telegram conectado.']);
+        return;
+    }
+
+    $url     = "https://api.telegram.org/bot{$botToken}/sendMessage";
+    $enviados = 0;
+    $falhas   = 0;
+
+    foreach ($chatIds as $chatId) {
+        $payload = json_encode(['chat_id' => $chatId, 'text' => $message]);
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_POST,          true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS,    $payload);
+        curl_setopt($ch, CURLOPT_HTTPHEADER,    ['Content-Type: application/json']);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT,       8);
+        $resposta = curl_exec($ch);
+        $erro     = curl_error($ch);
+        curl_close($ch);
+
+        if ($erro) {
+            $falhas++;
+            continue;
+        }
+        $json = json_decode($resposta, true);
+        if ($json && $json['ok']) {
+            $enviados++;
+        } else {
+            $falhas++;
+        }
+    }
+
+    echo json_encode([
+        'sucesso'  => true,
+        'mensagem' => "Broadcast concluído: {$enviados} enviado(s), {$falhas} falha(s).",
+        'enviados' => $enviados,
+        'falhas'   => $falhas,
+    ]);
+}
+
+// ── IPs Banidos ────────────────────────────────────────────────────────────
+
+function banIpList() {
+    global $conn;
+    $result = $conn->query("SELECT id, ip_address, reason, banned_at, banned_by FROM banned_ips ORDER BY banned_at DESC");
+    $rows = [];
+    while ($row = $result->fetch_assoc()) {
+        $rows[] = $row;
+    }
+    echo json_encode(['sucesso' => true, 'data' => $rows]);
+}
+
+function banIpAdd() {
+    global $conn;
+
+    $ip     = trim($_POST['ip_address'] ?? '');
+    $reason = trim($_POST['reason']     ?? '');
+    $by     = $_SESSION['admin_user_login'] ?? 'admin';
+
+    if (!filter_var($ip, FILTER_VALIDATE_IP)) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Endereço IP inválido.']);
+        return;
+    }
+
+    if ($ip === $_SERVER['REMOTE_ADDR']) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Você não pode banir seu próprio IP.']);
+        return;
+    }
+
+    $stmt = $conn->prepare(
+        "INSERT INTO banned_ips (ip_address, reason, banned_by) VALUES (?, ?, ?)
+         ON DUPLICATE KEY UPDATE reason = VALUES(reason), banned_by = VALUES(banned_by), banned_at = NOW()"
+    );
+    $stmt->bind_param("sss", $ip, $reason, $by);
+
+    if ($stmt->execute()) {
+        echo json_encode(['sucesso' => true, 'mensagem' => "IP {$ip} banido com sucesso."]);
+    } else {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Erro ao banir IP: ' . $conn->error]);
+    }
+    $stmt->close();
+}
+
+function banIpRemove() {
+    global $conn;
+
+    $id = (int) ($_POST['id'] ?? 0);
+    if ($id <= 0) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'ID inválido.']);
+        return;
+    }
+
+    $stmt = $conn->prepare("DELETE FROM banned_ips WHERE id = ?");
+    $stmt->bind_param("i", $id);
+
+    if ($stmt->execute() && $stmt->affected_rows > 0) {
+        echo json_encode(['sucesso' => true, 'mensagem' => 'IP desbanido com sucesso.']);
+    } else {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'IP não encontrado.']);
     }
     $stmt->close();
 }

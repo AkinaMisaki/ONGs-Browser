@@ -48,6 +48,14 @@ nav button:hover {
     background-color: #1976d2;
 }
 
+/* ── Header extras ────────────────────────────────────── */
+.admin-user {
+    color: rgba(255,255,255,0.85);
+    font-size: 0.9rem;
+    margin-left: auto;
+    margin-right: 1rem;
+}
+
 /* ── Login page ───────────────────────────────────────── */
 .login-main {
     flex: 1;
@@ -89,6 +97,7 @@ nav button:hover {
     font-size: 0.95rem;
 }
 
+.login-form input[type="text"],
 .login-form input[type="password"] {
     padding: 0.8rem;
     border: 1px solid #ccc;
@@ -150,27 +159,19 @@ nav button:hover {
     min-width: 220px;
     background: #ffffff;
     border-right: 1px solid #dde3f0;
-    padding: 1.5rem 0;
+    padding: 0;
     position: sticky;
     top: 56px;
     height: calc(100vh - 56px);
     overflow-y: auto;
 }
 
-.sidebar h2 {
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: #888;
-    padding: 0 1.2rem 0.8rem;
-    border-bottom: 1px solid #eee;
-    margin-bottom: 0.5rem;
-}
-
+#toolList,
 #tableList {
     list-style: none;
 }
 
+#toolList li,
 #tableList li {
     padding: 0.65rem 1.2rem;
     cursor: pointer;
@@ -182,10 +183,12 @@ nav button:hover {
     text-overflow: ellipsis;
 }
 
+#toolList li:hover,
 #tableList li:hover {
     background: #eef2ff;
 }
 
+#toolList li.active,
 #tableList li.active {
     background: #e8eeff;
     border-left-color: #0d47a1;
@@ -484,4 +487,77 @@ td.acoes {
     inset: 0;
     background: rgba(0,0,0,0.45);
     z-index: 1500;
+}
+
+/* ── Sidebar sections ─────────────────────────────────── */
+.sidebar-section-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #888;
+    padding: 1.2rem 1.2rem 0.4rem;
+}
+
+.sidebar-divider {
+    height: 1px;
+    background: #eee;
+    margin: 0.5rem 0 0;
+}
+
+/* ── Tool panel ───────────────────────────────────────── */
+.tool-panel {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+    padding: 1.5rem;
+}
+
+.tool-description {
+    color: #555;
+    font-size: 0.95rem;
+    margin-bottom: 1.2rem;
+}
+
+.tool-actions {
+    margin-top: 1rem;
+    display: flex;
+    gap: 0.7rem;
+}
+
+/* ── Broadcast result ─────────────────────────────────── */
+.broadcast-result {
+    margin-top: 1rem;
+    padding: 0.9rem 1.2rem;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 0.95rem;
+}
+
+.broadcast-result.sucesso {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #a5d6a7;
+}
+
+.broadcast-result.erro {
+    background: #ffebee;
+    color: #c62828;
+    border: 1px solid #ef9a9a;
+}
+
+/* ── Ban IP form ──────────────────────────────────────── */
+.ban-form-row {
+    display: flex;
+    gap: 0.8rem;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.ban-btn-group {
+    flex-shrink: 0;
+}
+
+.ban-btn-group button {
+    white-space: nowrap;
+    padding: 0.6rem 1rem;
 }

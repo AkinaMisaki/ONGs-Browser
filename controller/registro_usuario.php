@@ -4,6 +4,8 @@ $meurastro = [];
 header('Content-Type: application/json; charset=utf-8');
 require __DIR__ . '/../../vendor/autoload.php';
 include __DIR__ . '/../config.php';
+require_once __DIR__ . '/check_banned_ip.php';
+checkBannedIp($conn);
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;

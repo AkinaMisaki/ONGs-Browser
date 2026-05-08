@@ -2,6 +2,8 @@
 ini_set('display_errors', '0');
 $meurastro = [];
 include __DIR__ . '/../config.php';
+require_once __DIR__ . '/check_banned_ip.php';
+checkBannedIp($conn);
 
 header('Content-Type: application/json; charset=utf-8');
 

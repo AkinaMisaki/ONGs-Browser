@@ -68,96 +68,7 @@ $passkey = htmlspecialchars($row['telegram_pass']);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Conectar Telegram</title>
     <link rel="stylesheet" href="css/gerenciar_conta.css">
-    <style>
-        .passkey-box {
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-            background: #f4f7fc;
-            border: 1px solid #dce3ee;
-            border-radius: 6px;
-            padding: 0.8rem 1rem;
-        }
-
-        .passkey-box code {
-            flex: 1;
-            font-size: 1.3rem;
-            font-weight: bold;
-            letter-spacing: 3px;
-            color: #0056b3;
-            word-break: break-all;
-        }
-
-        .btn-copiar {
-            background: none;
-            border: 1px solid #0056b3;
-            color: #0056b3;
-            padding: 0.4rem 0.8rem;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            white-space: nowrap;
-            transition: background 0.2s, color 0.2s;
-        }
-
-        .btn-copiar:hover {
-            background: #0056b3;
-            color: white;
-        }
-
-        .steps {
-            list-style: none;
-            counter-reset: step;
-            display: flex;
-            flex-direction: column;
-            gap: 0.7rem;
-            margin-bottom: 1.2rem;
-        }
-
-        .steps li {
-            counter-increment: step;
-            display: flex;
-            align-items: flex-start;
-            gap: 0.8rem;
-            font-size: 0.95rem;
-            color: #444;
-            line-height: 1.5;
-        }
-
-        .steps li::before {
-            content: counter(step);
-            background: #0056b3;
-            color: white;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.8rem;
-            font-weight: bold;
-            flex-shrink: 0;
-            margin-top: 1px;
-        }
-
-        .btn-voltar {
-            background-color: #6c757d;
-            color: white;
-            border: none;
-            padding: 0.85rem;
-            font-size: 1rem;
-            cursor: pointer;
-            border-radius: 4px;
-            font-weight: bold;
-            transition: background 0.3s;
-            width: 100%;
-            margin-top: 0.5rem;
-        }
-
-        .btn-voltar:hover {
-            background-color: #5a6268;
-        }
-    </style>
+    <link rel="stylesheet" href="css/conectar_telegram.css">
 </head>
 <body>
 
@@ -171,7 +82,7 @@ $passkey = htmlspecialchars($row['telegram_pass']);
         <section class="card card-lgpd">
             <h2>Como conectar</h2>
             <ul class="steps">
-                <li>Abra o Telegram e encontre o nosso bot.</li>
+                <li>Abra o Telegram e <a href="https://t.me/ongsbrowserbot" target="_blank">encontre o nosso bot</a>.</li>
                 <li>Envie o comando abaixo com sua passkey:</li>
             </ul>
 

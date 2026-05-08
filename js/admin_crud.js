@@ -1,28 +1,25 @@
 const API = '../controller/crud_controller.php';
 
 // Wrapper de fetch que intercepta respostas de sessão expirada.
-// Se o servidor retornar expirado:true, redireciona pro login com aviso.
 function apiFetch(url, options) {
     return fetch(url, options)
         .then(r => r.json())
         .then(data => {
             if (data.expirado) {
                 window.location.href = 'admin_login.php?timeout=1';
-                throw new Error('expirado'); // Interrompe a cadeia de .then()
+                throw new Error('expirado');
             }
             return data;
         });
 }
 
 // ── Estado da sessão ───────────────────────────────────────────────────────
-// Variáveis globais que guardam o contexto atual do painel
-let currentTable   = null;   // tabela selecionada na sidebar
-let currentColumns = [];     // colunas dessa tabela (vem do INFORMATION_SCHEMA)
-let currentPkCol   = null;   // nome da coluna que é chave primária
-let editingRow     = null;   // null = modo criação, objeto = modo edição
+let currentTable   = null;
+let currentColumns = [];
+let currentPkCol   = null;
+let editingRow     = null;
 
 // ── Inicialização ──────────────────────────────────────────────────────────
-// Quando a página carrega, busca as tabelas disponíveis e popula a sidebar
 document.addEventListener('DOMContentLoaded', () => {
     apiFetch(`${API}?action=list_tables`)
         .then(data => {
@@ -31,7 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 list.innerHTML = '<li class="loading">Nenhuma tabela encontrada.</li>';
                 return;
             }
-            // Cria um item clicável na sidebar pra cada tabela
             list.innerHTML = data.data
                 .map(t => `<li onclick="selectTable('${t}')">${t}</li>`)
                 .join('');
@@ -42,24 +38,159 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 });
 
+// ── Gerenciamento de painéis ───────────────────────────────────────────────
+// Mostra apenas um painel de cada vez, esconde os demais.
+function showPanel(id) {
+    ['placeholder', 'tableArea', 'broadcastArea', 'bannedIpsArea'].forEach(p => {
+        document.getElementById(p).classList.add('hidden');
+    });
+    document.getElementById(id).classList.remove('hidden');
+}
+
+function clearSidebarActive() {
+    document.querySelectorAll('#toolList li, #tableList li').forEach(li => {
+        li.classList.remove('active');
+    });
+}
+
+// ── Ferramentas ────────────────────────────────────────────────────────────
+
+function openBroadcast() {
+    clearSidebarActive();
+    document.querySelector('#toolList li[data-tool="broadcast"]').classList.add('active');
+    showPanel('broadcastArea');
+    // Limpa resultado anterior
+    document.getElementById('broadcastResult').classList.add('hidden');
+    document.getElementById('broadcastMsg').className = 'mensagem hidden';
+}
+
+function openBannedIps() {
+    clearSidebarActive();
+    document.querySelector('#toolList li[data-tool="bannedips"]').classList.add('active');
+    showPanel('bannedIpsArea');
+    loadBannedIps();
+}
+
+// ── Broadcast ──────────────────────────────────────────────────────────────
+
+function sendBroadcast(e) {
+    e.preventDefault();
+    const btn  = e.target.querySelector('button[type="submit"]');
+    const text = document.getElementById('broadcastText').value.trim();
+    if (!text) return;
+
+    btn.disabled    = true;
+    btn.textContent = 'Enviando...';
+
+    const formData = new FormData();
+    formData.append('action',  'broadcast_send');
+    formData.append('message', text);
+
+    apiFetch(API, { method: 'POST', body: formData })
+        .then(data => {
+            const result = document.getElementById('broadcastResult');
+            result.textContent = data.mensagem;
+            result.className   = 'broadcast-result ' + (data.sucesso ? 'sucesso' : 'erro');
+            if (data.sucesso) {
+                document.getElementById('broadcastText').value = '';
+            }
+        })
+        .catch(() => {
+            const result = document.getElementById('broadcastResult');
+            result.textContent = 'Erro de comunicação com o servidor.';
+            result.className   = 'broadcast-result erro';
+        })
+        .finally(() => {
+            btn.disabled    = false;
+            btn.textContent = '📢 Enviar para todos';
+        });
+}
+
+// ── IPs Banidos ────────────────────────────────────────────────────────────
+
+function loadBannedIps() {
+    const tbody = document.getElementById('banTableBody');
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="5">Carregando...</td></tr>';
+
+    apiFetch(`${API}?action=banip_list`)
+        .then(data => {
+            if (!data.sucesso) {
+                tbody.innerHTML = `<tr class="empty-row"><td colspan="5">${escHtml(data.mensagem)}</td></tr>`;
+                return;
+            }
+            if (!data.data.length) {
+                tbody.innerHTML = '<tr class="empty-row"><td colspan="5">Nenhum IP banido.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = data.data.map(row => `
+                <tr>
+                    <td>${escHtml(row.ip_address)}</td>
+                    <td>${escHtml(row.reason || '—')}</td>
+                    <td>${escHtml(row.banned_at)}</td>
+                    <td>${escHtml(row.banned_by || '—')}</td>
+                    <td class="acoes">
+                        <button class="btn-editar" onclick="unbanIp(${escHtml(row.id)})">Desbanir</button>
+                    </td>
+                </tr>`).join('');
+        })
+        .catch(() => {
+            tbody.innerHTML = '<tr class="empty-row"><td colspan="5">Erro ao carregar IPs.</td></tr>';
+        });
+}
+
+function banIp(e) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    formData.append('action', 'banip_add');
+
+    apiFetch(API, { method: 'POST', body: formData })
+        .then(data => {
+            mostrarMensagemBan(data.mensagem, data.sucesso);
+            if (data.sucesso) {
+                e.target.reset();
+                loadBannedIps();
+            }
+        })
+        .catch(() => mostrarMensagemBan('Erro de comunicação com o servidor.', false));
+}
+
+function unbanIp(id) {
+    if (!confirm('Desbanir este IP?')) return;
+
+    const formData = new FormData();
+    formData.append('action', 'banip_remove');
+    formData.append('id',     id);
+
+    apiFetch(API, { method: 'POST', body: formData })
+        .then(data => {
+            mostrarMensagemBan(data.mensagem, data.sucesso);
+            if (data.sucesso) loadBannedIps();
+        })
+        .catch(() => mostrarMensagemBan('Erro de comunicação com o servidor.', false));
+}
+
+function mostrarMensagemBan(texto, sucesso) {
+    const el = document.getElementById('banMsg');
+    el.textContent = texto;
+    el.className   = 'mensagem ' + (sucesso ? 'sucesso' : 'erro');
+    clearTimeout(el._timeout);
+    el._timeout = setTimeout(() => { el.className = 'mensagem hidden'; }, 4000);
+}
+
 // ── Selecionar tabela ──────────────────────────────────────────────────────
-// Chamado quando o usuário clica em uma tabela na sidebar
 function selectTable(table) {
     currentTable = table;
     editingRow   = null;
 
-    // Destaca o item ativo na sidebar
+    clearSidebarActive();
     document.querySelectorAll('#tableList li').forEach(li => {
         li.classList.toggle('active', li.textContent === table);
     });
 
-    // Mostra a área de conteúdo e esconde o placeholder inicial
-    document.getElementById('placeholder').classList.add('hidden');
-    document.getElementById('tableArea').classList.remove('hidden');
+    showPanel('tableArea');
     document.getElementById('tableTitle').textContent = table;
     document.getElementById('mensagem').className = 'mensagem hidden';
 
-    // Carrega a estrutura da tabela e os registros ao mesmo tempo (mais rápido)
     Promise.all([
         apiFetch(`${API}?action=describe_table&table=${encodeURIComponent(table)}`),
         apiFetch(`${API}?action=list_records&table=${encodeURIComponent(table)}`)
@@ -68,7 +199,6 @@ function selectTable(table) {
         if (!recData.sucesso) { mostrarMensagem(recData.mensagem, false); return; }
 
         currentColumns = colData.data;
-        // Procura qual coluna é a PK — usada pra identificar registros nas ações de editar/excluir
         currentPkCol   = (currentColumns.find(c => c.COLUMN_KEY === 'PRI') || {}).COLUMN_NAME || null;
 
         renderTable(recData.data);
@@ -76,28 +206,23 @@ function selectTable(table) {
 }
 
 // ── Renderizar tabela ──────────────────────────────────────────────────────
-// Monta o HTML da tabela com os dados recebidos do servidor
 function renderTable(rows) {
     const head = document.getElementById('tableHead');
     const body = document.getElementById('tableBody');
 
-    // Cabeçalhos gerados a partir das colunas da tabela + coluna de ações
     head.innerHTML = currentColumns.map(c => `<th>${c.COLUMN_NAME}</th>`).join('') + '<th>Ações</th>';
 
-    // Se não tiver registros, mostra uma linha informativa
     if (!rows.length) {
         body.innerHTML = `<tr class="empty-row"><td colspan="${currentColumns.length + 1}">Nenhum registro encontrado.</td></tr>`;
         return;
     }
 
     body.innerHTML = rows.map(row => {
-        // Célula por célula, com escaping pra evitar XSS
         const cells = currentColumns.map(c =>
             `<td title="${escHtml(row[c.COLUMN_NAME])}">${escHtml(row[c.COLUMN_NAME])}</td>`
         ).join('');
 
         const pkVal = currentPkCol ? row[currentPkCol] : null;
-        // Só exibe os botões de ação se a tabela tiver uma chave primária
         const actions = pkVal !== null
             ? `<td class="acoes">
                  <button class="btn-editar" onclick='editarRegistro(${JSON.stringify(row)})'>Editar</button>
@@ -109,9 +234,7 @@ function renderTable(rows) {
     }).join('');
 }
 
-// ── Abrir e fechar modal ───────────────────────────────────────────────────
-
-// Abre o modal no modo criação (formulário em branco)
+// ── Modal ──────────────────────────────────────────────────────────────────
 function abrirModal(titulo) {
     editingRow = null;
     document.getElementById('modalTitulo').textContent = titulo || 'Novo Registro';
@@ -120,14 +243,12 @@ function abrirModal(titulo) {
     document.getElementById('overlay').classList.remove('hidden');
 }
 
-// Fecha o modal e limpa o estado de edição
 function fecharModal() {
     document.getElementById('modal').classList.add('hidden');
     document.getElementById('overlay').classList.add('hidden');
     editingRow = null;
 }
 
-// Abre o modal no modo edição, pré-preenchendo os campos com os dados da linha
 function editarRegistro(row) {
     editingRow = row;
     document.getElementById('modalTitulo').textContent = 'Editar Registro';
@@ -136,8 +257,7 @@ function editarRegistro(row) {
     document.getElementById('overlay').classList.remove('hidden');
 }
 
-// ── Montar campos do formulário dinamicamente ──────────────────────────────
-// Gera os inputs do formulário com base no tipo de dado de cada coluna
+// ── Campos do formulário ───────────────────────────────────────────────────
 function buildFormFields(rowData) {
     const isEdit = rowData !== null;
 
@@ -146,30 +266,23 @@ function buildFormFields(rowData) {
         const isAutoInc = col.EXTRA.toLowerCase().includes('auto_increment');
         const dataType  = col.DATA_TYPE.toLowerCase();
         const value     = isEdit ? (rowData[name] ?? '') : '';
-        // Marca campos obrigatórios com asterisco (exceto auto_increment)
         const required  = col.IS_NULLABLE === 'NO' && !isAutoInc ? ' *' : '';
 
-        // Auto_increment: omite no formulário de criação, mostra como readonly ao editar
         if (isAutoInc && !isEdit) return '';
 
         let input;
         if (isAutoInc && isEdit) {
-            // Campo de ID: visível mas não editável
             input = `<input type="text" name="${name}" value="${escHtml(value)}" readonly class="readonly">`;
         } else if (['text', 'longtext', 'mediumtext', 'tinytext'].includes(dataType)) {
-            // Textos longos ganham uma área de texto redimensionável
             input = `<textarea name="${name}" rows="3">${escHtml(value)}</textarea>`;
         } else if (['int', 'bigint', 'smallint', 'tinyint', 'mediumint'].includes(dataType)) {
-            // Inteiros usam input numérico (evita letras e facilita validação)
             input = `<input type="number" name="${name}" value="${escHtml(value)}">`;
         } else if (['datetime', 'timestamp'].includes(dataType)) {
-            // datetime-local precisa do formato "YYYY-MM-DDTHH:MM" — convertemos aqui
             const dtVal = value ? String(value).replace(' ', 'T').substring(0, 16) : '';
             input = `<input type="datetime-local" name="${name}" value="${escHtml(dtVal)}">`;
         } else if (dataType === 'date') {
             input = `<input type="date" name="${name}" value="${escHtml(value)}">`;
         } else {
-            // Qualquer outro tipo (varchar, char, enum, etc.) usa texto simples
             input = `<input type="text" name="${name}" value="${escHtml(value)}">`;
         }
 
@@ -180,8 +293,7 @@ function buildFormFields(rowData) {
     }).join('');
 }
 
-// ── Salvar (criar ou editar) ───────────────────────────────────────────────
-// Detecta automaticamente se é criação ou edição com base em editingRow
+// ── Salvar registro ────────────────────────────────────────────────────────
 function salvarRegistro(e) {
     e.preventDefault();
 
@@ -190,7 +302,6 @@ function salvarRegistro(e) {
 
     let action;
     if (editingRow && currentPkCol) {
-        // Modo edição: manda a PK pra o servidor saber qual registro atualizar
         action = 'update_record';
         formData.append('__pk_col', currentPkCol);
         formData.append('__pk_val', editingRow[currentPkCol]);
@@ -204,14 +315,13 @@ function salvarRegistro(e) {
             mostrarMensagem(data.mensagem, data.sucesso);
             if (data.sucesso) {
                 fecharModal();
-                recarregarRegistros(); // Atualiza a tabela sem recarregar a página
+                recarregarRegistros();
             }
         })
         .catch(() => mostrarMensagem('Erro de comunicação com o servidor.', false));
 }
 
 // ── Excluir registro ───────────────────────────────────────────────────────
-// Pede confirmação antes de deletar — uma vez confirmado, sem volta
 function excluirRegistro(pkVal) {
     if (!confirm(`Excluir o registro com ${currentPkCol} = "${pkVal}"?`)) return;
 
@@ -230,7 +340,6 @@ function excluirRegistro(pkVal) {
 }
 
 // ── Recarregar registros ───────────────────────────────────────────────────
-// Busca os dados atualizados sem recarregar a página inteira
 function recarregarRegistros() {
     apiFetch(`${API}?action=list_records&table=${encodeURIComponent(currentTable)}`)
         .then(data => {
@@ -238,8 +347,7 @@ function recarregarRegistros() {
         });
 }
 
-// ── Mensagem de feedback ───────────────────────────────────────────────────
-// Exibe uma mensagem de sucesso ou erro por 4 segundos e some sozinha
+// ── Mensagem de feedback (área de tabela) ──────────────────────────────────
 function mostrarMensagem(texto, sucesso) {
     const el = document.getElementById('mensagem');
     el.textContent = texto;
@@ -249,8 +357,6 @@ function mostrarMensagem(texto, sucesso) {
 }
 
 // ── Proteção contra XSS ───────────────────────────────────────────────────
-// Escapa caracteres especiais antes de inserir qualquer valor no HTML.
-// Sem isso, dados do banco com < > & " ' poderiam quebrar ou injetar código.
 function escHtml(val) {
     return String(val ?? '')
         .replace(/&/g, '&amp;')

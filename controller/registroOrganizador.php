@@ -4,6 +4,8 @@ $meurastro = [];
 
 header('Content-Type: application/json; charset=utf-8');
 include __DIR__ . '/../config.php';
+require_once __DIR__ . '/check_banned_ip.php';
+checkBannedIp($conn);
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
