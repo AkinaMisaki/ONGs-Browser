@@ -4,3 +4,5 @@ README.md
 .env
 uploads/*
 !uploads/.gitkeep
+config.php
+config/encrypt_env.php
