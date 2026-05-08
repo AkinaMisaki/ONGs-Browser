@@ -161,6 +161,18 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // --- Telegram: Desconectar ---
+    const formDesconectarTelegram = document.getElementById('formDesconectarTelegram');
+    if (formDesconectarTelegram) {
+        formDesconectarTelegram.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            if (!window.confirm('Deseja mesmo desconectar o Telegram desta conta?')) return;
+            await enviarFormulario(formDesconectarTelegram, '../controller/gerenciar_conta.php', function (resultado) {
+                if (resultado.sucesso) setTimeout(() => { window.location.reload(); }, 1500);
+            });
+        });
+    }
+
     // --- Só dígitos nos campos TOTP ---
     document.querySelectorAll('input[inputmode="numeric"]').forEach(function (input) {
         input.addEventListener('input', function () {
@@ -227,4 +239,20 @@ function mostrarMensagem(texto, tipo = 'erro') {
 function realizarLogout() {
     fetch('../controller/logout.php', { method: 'GET' })
         .finally(() => { window.location.href = '/universidade/view/login.php'; });
+}
+
+function testarTele() {
+    fetch('../controller/testar_telegram.php', { method: 'GET' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.sucesso) {
+                mostrarMensagem(data.mensagem, 'sucesso');
+            } else {
+                tratarErro(data.mensagem);
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            mostrarMensagem('Erro ao conectar com o servidor.', 'erro');
+        });
 }

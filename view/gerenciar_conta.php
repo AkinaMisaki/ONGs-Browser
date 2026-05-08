@@ -8,7 +8,7 @@ if (!isset($_SESSION['usuario_id'])) {
 
 include __DIR__ . '/../config.php';
 
-$stmt = $conn->prepare("SELECT u.nome_usuario, u.email, u.usuario_login, uv.codVerificador FROM usuario u INNER JOIN usuario_verificacao uv ON uv.fk_usuario = u.id_usuario WHERE u.id_usuario = ?");
+$stmt = $conn->prepare("SELECT u.nome_usuario, u.email, u.usuario_login, uv.codVerificador, uv.telegram_id FROM usuario u INNER JOIN usuario_verificacao uv ON uv.fk_usuario = u.id_usuario WHERE u.id_usuario = ?");
 $stmt->bind_param("i", $_SESSION['usuario_id']);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -31,7 +31,8 @@ $stmtProp->close();
 $conn->close();
 
 $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-$tem2fa = !empty($usuario['codVerificador']);
+$tem2fa       = !empty($usuario['codVerificador']);
+$temTelegram  = !empty($usuario['telegram_id']);
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -181,6 +182,24 @@ $tem2fa = !empty($usuario['codVerificador']);
                 </p>
                 <button type="button" class="btn-proprietario" onclick="window.location.href='registroOrganizadores.php'">
                     Tornar-se Proprietário de ONG
+                </button>
+            <?php endif; ?>
+        </section>
+
+        <section class="card card-lgpd">
+            <h2>Conectar com Telegram (2F Auth)</h2>
+            <?php if ($temTelegram): ?>
+                <p class="status-2fa ativo">Telegram conectado</p>
+                <form id="formDesconectarTelegram" style="display:flex; flex-direction:column; gap:0.6rem;">
+                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                    <input type="hidden" name="acao" value="desconectar_telegram">
+                    <button type="button" class="btn-lgpd" onclick="testarTele()">Testar Telegram</button>
+                    <button type="submit" class="btn-perigo" style="padding:0.85rem; font-size:1rem; border:none; border-radius:4px; font-weight:bold; cursor:pointer; width:100%;">Desconectar Telegram</button>
+                </form>
+            <?php else: ?>
+                <p class="status-2fa inativo">Telegram não conectado</p>
+                <button type="button" class="btn-lgpd" onclick="window.location.href='conectar_telegram.php'">
+                    Conectar Telegram
                 </button>
             <?php endif; ?>
         </section>

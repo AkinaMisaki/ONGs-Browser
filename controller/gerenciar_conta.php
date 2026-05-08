@@ -288,6 +288,20 @@ if ($acao === 'desativar_2fa') {
     exit;
 }
 
+// -----------------------------------------------------------------------
+// AÇÃO: Desconectar Telegram
+// -----------------------------------------------------------------------
+if ($acao === 'desconectar_telegram') {
+    $stmt = $conn->prepare("UPDATE usuario_verificacao SET telegram_id = NULL, telegram_pass = NULL WHERE fk_usuario = ?");
+    $stmt->bind_param("i", $id_usuario);
+    $stmt->execute();
+    $stmt->close();
+    $conn->close();
+
+    echo json_encode(['sucesso' => true, 'mensagem' => 'Telegram desconectado com sucesso.']);
+    exit;
+}
+
 // Ação desconhecida
 echo json_encode(['sucesso' => false, 'mensagem' => 'Ação inválida.']);
 ?>
