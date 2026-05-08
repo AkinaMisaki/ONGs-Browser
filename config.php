@@ -9,7 +9,6 @@ $db_pass      = $env['DB_PASS'];
 $db_name      = $env['DB_NAME'];
 $db_port      = (int) $env['DB_PORT'];
 $SMTP_PASSWORD        = $env['SMTP_PASSWORD'];
-$ADMIN_PASSWORD_HASH  = $env['ADMIN_PASSWORD_HASH'] ?? '';
 $CAPTCHA_SITE = $env['RECAPTCHA_SITE'];
 $CAPTCHA_SECRETA = $env['RECAPTCHA_SECRET'];
 
