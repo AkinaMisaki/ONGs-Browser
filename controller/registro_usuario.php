@@ -2,7 +2,7 @@
 $meurastro = [];
 
 header('Content-Type: application/json; charset=utf-8');
-require __DIR__ . '/../../vendor/autoload.php';
+require __DIR__ . '/../vendor/autoload.php';
 include __DIR__ . '/../config.php';
 require_once __DIR__ . '/check_banned_ip.php';
 checkBannedIp($conn);
@@ -43,6 +43,21 @@ $senhaCriptografada = password_hash($rawSenha, PASSWORD_ARGON2ID, $options);
 $statusConta       = 0;
 $activationToken   = bin2hex(random_bytes(32));
 $activationExpire  = date("Y-m-d H:i:s", strtotime("+24 hours"));
+
+
+// Unicidade 
+$stmt = $conn->prepare("SELECT id FROM usuario WHERE email = ? OR usuario_login = ? LIMIT 1");
+$stmt->bind_param("ss", $rawEmail, $rawUsuario);
+$stmt->execute();
+$stmt->store_result();
+if ($stmt->num_rows > 0) {
+    $stmt->close();
+    $conn->close();
+    echo json_encode(["sucesso" => false, "mensagem" => "Usuário ou e-mail já cadastrados."]);
+    exit;
+}
+$stmt->close();
+// ---------------------------------------------
 
 try {
     $sql = "INSERT INTO usuario (nome_usuario, email, usuario_login, usuario_password)
