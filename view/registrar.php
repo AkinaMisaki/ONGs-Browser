@@ -1,3 +1,12 @@
+<?php
+session_start();
+if (!isset($_SESSION['captcha_aprovado']) || $_SESSION['captcha_aprovado'] !== true) {
+    header('Location: /universidade/view/captcha_view.php');
+    exit;
+}
+
+?>
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
