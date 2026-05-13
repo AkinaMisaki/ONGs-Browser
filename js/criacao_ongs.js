@@ -83,6 +83,7 @@ async function realizarCadastroUsuario() {
             alert(resultado.mensagem);
             form.reset();
             dropZone.querySelector('span').innerText = "Arraste sua imagem aqui";
+            window.location.href = '../view/visualizar_ong.php';
         } else {
             alert('Erro: ' + resultado.mensagem);
         }
