@@ -2,8 +2,8 @@
 session_start();
 $meurastro = [];
 header('Content-Type: application/json; charset=utf-8');
-include _DIR_ . '/../config.php';
-require_once _DIR_ . '/check_banned_ip.php';
+include __DIR__ . '/../config.php';
+require_once __DIR__ . '/check_banned_ip.php';
 checkBannedIp($conn);
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $rawcpf = isset($_POST['cpf']) ? trim($_POST['cpf']) : '';
@@ -36,7 +36,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 
                 $sql = "INSERT INTO proprietario_ong (cpf, rg, telefone, fk_usuario) VALUES (?, ?, ?, ?)";
                 $stmt = $conn->prepare($sql);
-                $stmt->bind_param("ssii", $rawcpf, $rawrg, $rawtelefone, $idUsuario);
+                $stmt->bind_param("sssi", $rawcpf, $rawrg, $rawtelefone, $idUsuario);
                 
                 if ($stmt->execute()) {
                     $_SESSION['statusConta'] = 2; 
