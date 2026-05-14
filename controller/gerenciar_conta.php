@@ -247,9 +247,25 @@ if ($acao === 'ativar_2fa') {
 }
 
 // -----------------------------------------------------------------------
+// Auxiliar: verifica se o usuário atual é admin
+// -----------------------------------------------------------------------
+function isAdmin(mysqli $conn, int $id): bool {
+    $s = $conn->prepare("SELECT statusConta FROM usuario_verificacao WHERE fk_usuario = ? LIMIT 1");
+    $s->bind_param("i", $id);
+    $s->execute();
+    $row = $s->get_result()->fetch_assoc();
+    $s->close();
+    return ((int) ($row['statusConta'] ?? 0)) === 3;
+}
+
+// -----------------------------------------------------------------------
 // AÇÃO: Desativar 2FA — verifica o código atual e remove o segredo
 // -----------------------------------------------------------------------
 if ($acao === 'desativar_2fa') {
+    if (isAdmin($conn, $id_usuario)) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Administradores não podem desativar o 2FA por aqui. Use a opção de recuperação no login.']);
+        exit;
+    }
     $codigoEnviado = trim($_POST['codigo_totp'] ?? '');
 
     if (empty($codigoEnviado) || strlen($codigoEnviado) !== 6 || !ctype_digit($codigoEnviado)) {
@@ -293,6 +309,10 @@ if ($acao === 'desativar_2fa') {
 // AÇÃO: Desconectar Telegram
 // -----------------------------------------------------------------------
 if ($acao === 'desconectar_telegram') {
+    if (isAdmin($conn, $id_usuario)) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Administradores não podem desconectar o Telegram por aqui. Use a opção de recuperação no login.']);
+        exit;
+    }
     $stmt = $conn->prepare("UPDATE usuario_verificacao SET telegram_id = NULL, telegram_pass = NULL WHERE fk_usuario = ?");
     $stmt->bind_param("i", $id_usuario);
     $stmt->execute();
@@ -346,6 +366,41 @@ if ($acao === 'excluir_dados_parciais') {
         error_log($e->getMessage());
         echo json_encode(['sucesso' => false, 'mensagem' => 'Falha ao remover os dados.']);
     }
+    exit;
+}
+
+// -----------------------------------------------------------------------
+// AÇÃO: Salvar pergunta de recuperação (apenas admins)
+// -----------------------------------------------------------------------
+if ($acao === 'salvar_pergunta_recuperacao') {
+    if (!isAdmin($conn, $id_usuario)) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Ação não permitida.']);
+        exit;
+    }
+
+    $qid    = (int) ($_POST['personal_id'] ?? 0);
+    $answer = strtolower(trim($_POST['personal_answer'] ?? ''));
+
+    $valid_ids = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    if (!in_array($qid, $valid_ids, true)) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Selecione uma pergunta válida.']);
+        exit;
+    }
+
+    if (empty($answer) || strlen($answer) > 200) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Resposta inválida.']);
+        exit;
+    }
+
+    $hash = password_hash($answer, PASSWORD_BCRYPT);
+
+    $stmt = $conn->prepare("UPDATE usuario_verificacao SET personal_id = ?, personal_answer = ? WHERE fk_usuario = ?");
+    $stmt->bind_param("isi", $qid, $hash, $id_usuario);
+    $stmt->execute();
+    $stmt->close();
+    $conn->close();
+
+    echo json_encode(['sucesso' => true, 'mensagem' => 'Pergunta de recuperação salva com sucesso.']);
     exit;
 }
 

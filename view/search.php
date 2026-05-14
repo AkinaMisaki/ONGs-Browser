@@ -38,7 +38,7 @@ $ongs = searchONGs($query);
     <?php foreach ($ongs as $ong): ?>
         <div class="card">
             <img class="card-thumb"
-                 src="<?php echo !empty($ong['caminho_arquivo']) ? htmlspecialchars($ong['caminho_arquivo']) : '../uploads/placeholder.png'; ?>"
+                 src="<?php echo !empty($ong['caminho_arquivo']) ? htmlspecialchars('../' . ltrim($ong['caminho_arquivo'], '/')) : '../uploads/placeholder.png'; ?>"
                  alt="<?php echo htmlspecialchars($ong['nome_ong']); ?>">
             <div class="card-corpo">
                 <div class="card-texto">

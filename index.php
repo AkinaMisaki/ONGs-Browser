@@ -2,11 +2,6 @@
 session_start();
 include __DIR__ . '/config.php';
 
-if (!isset($_SESSION['captcha_aprovado']) || $_SESSION['captcha_aprovado'] !== true) {
-    header('Location: view/captcha_view.php');
-    exit; 
-}
-
 $sql = "SELECT id_ong, nome_ong, descricao, caminho_arquivo FROM ong ORDER BY RAND() LIMIT 20";
 $result = $conn->query($sql);
 ?>
@@ -51,7 +46,7 @@ $result = $conn->query($sql);
         if ($result->num_rows > 0) {
             while($row = $result->fetch_assoc()) {
                 $src = !empty($row['caminho_arquivo'])
-                    ? htmlspecialchars($row['caminho_arquivo'])
+                    ? htmlspecialchars(ltrim($row['caminho_arquivo'], '/'))
                     : 'uploads/placeholder.png';
                 $alt = htmlspecialchars($row['nome_ong']);
                 $imgHtml = "<img class=\"card-thumb\" src=\"{$src}\" alt=\"{$alt}\">";

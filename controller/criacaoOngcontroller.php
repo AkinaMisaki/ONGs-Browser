@@ -34,7 +34,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $extensao = pathinfo($arquivo['name'], PATHINFO_EXTENSION);
             $novoNome = uniqid() . "." . $extensao; 
             $caminhoCompleto = $diretorioDestino . $novoNome;
-            $caminhoBanco = '/uploads/' . $novoNome; 
+            $caminhoBanco = 'uploads/' . $novoNome;
 
             if (move_uploaded_file($arquivo['tmp_name'], $caminhoCompleto)) {
                 try {
@@ -42,8 +42,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     $stmt = $conn->prepare($sql);
                     $stmt->bind_param("sssi", $rawOng, $rawDescricao, $caminhoBanco, $rawProprietarioId);
                     $stmt->execute();
+                    $novoId = $conn->insert_id;
 
-                    $resposta = ["sucesso" => true, "mensagem" => "Cadastro e upload realizados com sucesso!"];
+                    $resposta = ["sucesso" => true, "mensagem" => "Cadastro e upload realizados com sucesso!", "id_ong" => $novoId];
                 } catch (mysqli_sql_exception $e) {
                     if (file_exists($caminhoCompleto)) unlink($caminhoCompleto);
                     if ($e->getCode() == 1062) {

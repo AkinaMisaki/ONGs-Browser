@@ -103,6 +103,7 @@ main > h1 {
     font-size: 0.95rem;
 }
 
+.card form select,
 .card form input[type="text"],
 .card form input[type="password"] {
     padding: 0.75rem;
@@ -114,6 +115,7 @@ main > h1 {
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 
+.card form select:focus,
 .card form input[type="text"]:focus,
 .card form input[type="password"]:focus {
     outline: none;

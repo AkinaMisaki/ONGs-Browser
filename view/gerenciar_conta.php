@@ -85,7 +85,43 @@ include __DIR__ . '/../controller/init/gerenciar_conta.php';
         <section class="card card-2fa <?= $tem2fa ? 'ativa' : '' ?>">
             <h2>Autenticação em Dois Fatores (2FA)</h2>
 
-            <?php if ($tem2fa): ?>
+            <?php if ($esAdmin && $tem2fa): ?>
+                <p class="status-2fa ativo">2FA ativado via Google Authenticator</p>
+                <p class="lgpd-descricao">
+                    Administradores não podem desativar o 2FA por aqui. Para reconfigurar, use
+                    a opção <strong>"Perdi meu dispositivo"</strong> na tela de login.
+                </p>
+
+            <?php elseif ($esAdmin && !$tem2fa): ?>
+                <p class="status-2fa inativo">2FA não configurado</p>
+                <p class="lgpd-descricao">
+                    Configure o autenticador para poder acessar o painel administrativo.
+                </p>
+                <button type="button" id="btnGerarQr" class="btn-2fa-ativar">Configurar 2FA</button>
+
+                <div id="setup2fa" class="setup-2fa hidden">
+                    <p class="instrucao-qr">
+                        1. Abra o <strong>Google Authenticator</strong> e toque em "+"<br>
+                        2. Escaneie o QR code abaixo<br>
+                        3. Digite o código gerado para confirmar
+                    </p>
+                    <div id="qrContainer" class="qr-container"></div>
+                    <details class="secret-manual">
+                        <summary>Não consegue escanear? Use a chave manual</summary>
+                        <code id="secretManual"></code>
+                    </details>
+                    <form id="formAtivar2fa">
+                        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                        <input type="hidden" name="acao" value="ativar_2fa">
+                        <label for="totp_confirmar">Código de confirmação</label>
+                        <input type="text" id="totp_confirmar" name="codigo_totp"
+                               maxlength="6" placeholder="000000" inputmode="numeric"
+                               autocomplete="one-time-code" required>
+                        <button type="submit">Confirmar e Ativar</button>
+                    </form>
+                </div>
+
+            <?php elseif ($tem2fa): ?>
                 <p class="status-2fa ativo">2FA ativado via Google Authenticator</p>
                 <p class="lgpd-descricao">
                     Para desativar o 2FA, confirme com um código atual do seu aplicativo autenticador.
@@ -99,6 +135,7 @@ include __DIR__ . '/../controller/init/gerenciar_conta.php';
                            autocomplete="one-time-code" required>
                     <button type="submit" class="btn-perigo">Desativar 2FA</button>
                 </form>
+
             <?php else: ?>
                 <p class="status-2fa inativo">2FA desativado</p>
                 <p class="lgpd-descricao">
@@ -133,6 +170,7 @@ include __DIR__ . '/../controller/init/gerenciar_conta.php';
         </section>
 
         <!-- Tornar-se Proprietário -->
+        <?php if (!$esAdmin): ?>
         <section class="card card-proprietario">
             <h2>Gerenciar ONGs</h2>
             <?php if ($eProprietario): ?>
@@ -151,17 +189,26 @@ include __DIR__ . '/../controller/init/gerenciar_conta.php';
                 </button>
             <?php endif; ?>
         </section>
+        <?php endif; ?>
 
         <section class="card card-lgpd">
             <h2>Conectar com Telegram (2F Auth)</h2>
             <?php if ($temTelegram): ?>
                 <p class="status-2fa ativo">Telegram conectado</p>
-                <form id="formDesconectarTelegram" style="display:flex; flex-direction:column; gap:0.6rem;">
-                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
-                    <input type="hidden" name="acao" value="desconectar_telegram">
+                <?php if ($esAdmin): ?>
+                    <p class="lgpd-descricao">
+                        Administradores não podem desconectar o Telegram por aqui. Para reconfigurar, use
+                        a opção <strong>"Perdi meu dispositivo"</strong> na tela de login.
+                    </p>
                     <button type="button" class="btn-lgpd" onclick="testarTele()">Testar Telegram</button>
-                    <button type="submit" class="btn-perigo" style="padding:0.85rem; font-size:1rem; border:none; border-radius:4px; font-weight:bold; cursor:pointer; width:100%;">Desconectar Telegram</button>
-                </form>
+                <?php else: ?>
+                    <form id="formDesconectarTelegram" style="display:flex; flex-direction:column; gap:0.6rem;">
+                        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                        <input type="hidden" name="acao" value="desconectar_telegram">
+                        <button type="button" class="btn-lgpd" onclick="testarTele()">Testar Telegram</button>
+                        <button type="submit" class="btn-perigo" style="padding:0.85rem; font-size:1rem; border:none; border-radius:4px; font-weight:bold; cursor:pointer; width:100%;">Desconectar Telegram</button>
+                    </form>
+                <?php endif; ?>
             <?php else: ?>
                 <p class="status-2fa inativo">Telegram não conectado</p>
                 <button type="button" class="btn-lgpd" onclick="window.location.href='conectar_telegram.php'">
@@ -169,6 +216,40 @@ include __DIR__ . '/../controller/init/gerenciar_conta.php';
                 </button>
             <?php endif; ?>
         </section>
+        <!-- Pergunta de Recuperação (apenas admins) -->
+        <?php if ($esAdmin): ?>
+        <section class="card">
+            <h2>Pergunta de Recuperação</h2>
+            <p class="lgpd-descricao">
+                Esta pergunta é usada para recuperar acesso ao painel admin caso você perca seu
+                dispositivo com Telegram e autenticador.
+                <?= $temPergunta ? '<strong>Pergunta já configurada.</strong> Você pode atualizá-la abaixo.' : '<strong>Nenhuma pergunta configurada ainda.</strong> Configure agora.' ?>
+            </p>
+            <form id="formPerguntaRecuperacao">
+                <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                <input type="hidden" name="acao" value="salvar_pergunta_recuperacao">
+                <label for="personal_id">Pergunta de segurança</label>
+                <select id="personal_id" name="personal_id" required>
+                    <option value="">— Escolha uma pergunta —</option>
+                    <option value="1">Qual o nome do seu primeiro animal de estimação?</option>
+                    <option value="2">Qual é o nome de solteira de sua mãe?</option>
+                    <option value="3">Em que cidade você nasceu?</option>
+                    <option value="4">Qual era o seu apelido na infância?</option>
+                    <option value="5">Qual foi o nome da sua primeira escola?</option>
+                    <option value="6">Qual é o nome do seu melhor amigo de infância?</option>
+                    <option value="7">Qual foi o modelo do seu primeiro carro?</option>
+                    <option value="8">Qual é o nome da rua em que você cresceu?</option>
+                    <option value="9">Qual é o segundo nome da sua mãe?</option>
+                    <option value="10">Qual foi o nome do seu professor favorito?</option>
+                </select>
+                <label for="personal_answer">Resposta</label>
+                <input type="text" id="personal_answer" name="personal_answer"
+                       placeholder="Sua resposta (não diferencia maiúsculas)" required autocomplete="off">
+                <button type="submit">Salvar Pergunta</button>
+            </form>
+        </section>
+        <?php endif; ?>
+
         <!-- LGPD - Dados Pessoais Adicionais + Exclusão Parcial -->
         <section class="card card-perigo">
             <h2>Dados do Perfil Adicional</h2>

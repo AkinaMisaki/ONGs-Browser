@@ -1,5 +1,5 @@
 <?php
-include_once __DIR__ . "/../config.php";
+include_once __DIR__ . '/../controller/init/captcha_view.php';
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">

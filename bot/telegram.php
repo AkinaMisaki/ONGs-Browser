@@ -29,7 +29,7 @@ try {
     }
 
     if (strpos($texto, '/verificar') === 0) {
-        // Check if this Telegram account is already linked to any site account
+        // Vê se essa conta do Telegram já está vinculada a algum usuário do site
         $stmtChk = $conn->prepare("SELECT u.nome_usuario FROM usuario_verificacao uv JOIN usuario u ON u.id_usuario = uv.fk_usuario WHERE uv.telegram_id = ?");
         $stmtChk->bind_param("s", $chat_id);
         $stmtChk->execute();

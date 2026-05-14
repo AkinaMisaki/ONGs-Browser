@@ -80,10 +80,9 @@ async function realizarCadastroUsuario() {
         const resultado = await resposta.json();
         
         if (resultado.sucesso) {
-            alert(resultado.mensagem);
             form.reset();
             dropZone.querySelector('span').innerText = "Arraste sua imagem aqui";
-            window.location.href = '../view/visualizar_ong.php';
+            window.location.href = `../view/visualizar_ong.php?id=${resultado.id_ong}`;
         } else {
             alert('Erro: ' + resultado.mensagem);
         }

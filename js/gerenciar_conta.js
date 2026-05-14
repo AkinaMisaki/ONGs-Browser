@@ -177,6 +177,17 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // --- Pergunta de Recuperação (admin) ---
+    const formPergunta = document.getElementById('formPerguntaRecuperacao');
+    if (formPergunta) {
+        formPergunta.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            await enviarFormulario(formPergunta, '../controller/gerenciar_conta.php', function (resultado) {
+                if (resultado.sucesso) formPergunta.reset();
+            });
+        });
+    }
+
     // --- 2FA: Gerar QR Code ---
     const btnGerarQr = document.getElementById('btnGerarQr');
     if (btnGerarQr) {

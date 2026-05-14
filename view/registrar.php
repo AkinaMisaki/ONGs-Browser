@@ -1,7 +1,5 @@
 <?php
-session_start();
-include_once __DIR__ . '/../config.php';
-
+include __DIR__ . '/../controller/init/registrar.php';
 ?>
 
 <!DOCTYPE html>

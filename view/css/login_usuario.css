@@ -112,3 +112,88 @@ form button[type="submit"]:hover {
     color: #0056b3;
     text-decoration: underline;
 }
+
+/* ── Login mode tabs ──────────────────────────────────── */
+.login-tabs {
+    display: flex;
+    width: 100%;
+    max-width: 450px;
+    border-radius: 6px 6px 0 0;
+    overflow: hidden;
+    border: 3px solid #003370;
+    border-bottom: none;
+}
+
+.login-tab {
+    flex: 1;
+    text-align: center;
+    padding: 0.65rem 1rem;
+    font-size: 0.95rem;
+    font-weight: bold;
+    background: #1a6ed4;
+    color: rgba(255,255,255,0.7);
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.login-tab:hover {
+    background: #1260bf;
+    color: white;
+}
+
+.login-tab.active {
+    background: #0056b3;
+    color: white;
+}
+
+.login-tab + .login-tab {
+    border-left: 2px solid #003370;
+}
+
+/* Square off the top corners of the form when tabs are above it */
+.login-tabs + form {
+    border-radius: 0 0 8px 8px;
+    border-top: none;
+}
+
+/* ── Telegram send/verify button ──────────────────────── */
+form .btn-telegram {
+    background-color: #0088cc;
+    color: white;
+    border: none;
+    padding: 1rem;
+    font-size: 1.1rem;
+    cursor: pointer;
+    border-radius: 4px;
+    margin-top: 1rem;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+form .btn-telegram:hover {
+    background-color: #0077b5;
+}
+
+/* ── OTP info and cancel ──────────────────────────────── */
+.otp-info {
+    font-size: 0.95rem;
+    color: rgba(255,255,255,0.85);
+    text-align: center;
+    line-height: 1.4;
+    margin: 0;
+}
+
+.otp-cancel {
+    display: block;
+    text-align: center;
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.6);
+    text-decoration: underline;
+    cursor: pointer;
+    margin-top: -0.5rem;
+}
+
+.otp-cancel:hover {
+    color: rgba(255,255,255,0.9);
+}
