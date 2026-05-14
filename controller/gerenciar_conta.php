@@ -302,6 +302,60 @@ if ($acao === 'desconectar_telegram') {
     exit;
 }
 
+if ($acao === 'resgatar_dados_parciais') {
+    $sql = "SELECT u.nome_usuario, u.email, d.CPF, d.idade, d.genero, d.pais, d.uf, d.cidade 
+            FROM usuario u
+            LEFT JOIN Usuario_Dados d ON u.id_usuario = d.fk_usuario_id
+            WHERE u.id_usuario = ?";   
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $id_usuario);
+    $stmt->execute();
+    $dados = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+    $conn->close();
+    if ($dados) {
+        echo json_encode(['sucesso' => true, 'dados' => $dados]);
+    } else {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Não foi possível resgatar os dados.']);
+    }
+    exit;
+}
+
+if ($acao === 'excluir_dados_parciais') {
+    $campos_recebidos = $_POST['campos_exclusao'] ?? [];
+    if (empty($campos_recebidos) || !is_array($campos_recebidos)) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Nenhum campo válido selecionado.']);
+        exit;
+    }
+    $colunas_permitidas = ['CPF', 'idade', 'genero', 'pais', 'uf', 'cidade']; 
+    $campos_seguros = [];
+    foreach ($campos_recebidos as $campo) {
+        if (in_array($campo, $colunas_permitidas)) {
+            $campos_seguros[] = $campo;
+        }
+    }
+    if (empty($campos_seguros)) {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Seleção inválida.']);
+        exit;
+    }
+    $set_clauses = [];
+    foreach ($campos_seguros as $campo) {
+        $set_clauses[] = "$campo = NULL"; 
+    }
+    $set_string = implode(', ', $set_clauses);
+    $sql = "UPDATE Usuario_Dados SET $set_string WHERE fk_usuario_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $id_usuario);
+    if ($stmt->execute()) {
+        echo json_encode(['sucesso' => true, 'mensagem' => 'Dados removidos com sucesso.']);
+    } else {
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Falha ao remover os dados.']);
+    }
+    $stmt->close();
+    $conn->close();
+    exit;
+}
+
 // Ação desconhecida
 echo json_encode(['sucesso' => false, 'mensagem' => 'Ação inválida.']);
 ?>

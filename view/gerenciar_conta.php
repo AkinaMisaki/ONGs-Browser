@@ -224,6 +224,32 @@ $temTelegram  = !empty($usuario['telegram_id']);
                 <button type="submit" class="btn-perigo">Excluir Minha Conta</button>
             </form>
         </section>
+        <!-- LGPD - Dados Pessoais Adicionais -->
+        <section class="card card-info">
+            <h2>Dados Pessoais Adicionais</h2>
+            <p class="lgpd-descricao">
+                Abaixo estão listados os dados adicionais vinculados ao seu perfil.
+            </p>
+            <div id="info-usuario-container">
+                <p><em>Carregando seus dados...</em></p>
+            </div>
+        </section>
+        <!-- LGPD - Exclusão Parcial de Dados -->
+        <section class="card card-perigo">
+            <h2>Exclusão Parcial de Dados</h2>
+            <p class="lgpd-descricao">
+                Em conformidade com a <strong>LGPD</strong>, você pode optar por excluir informações específicas do seu perfil sem deletar sua conta inteira. Selecione os dados que deseja remover permanentemente:
+            </p>
+            <form id="formExclusaoParcial">
+                <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                <input type="hidden" name="acao" value="excluir_dados_parciais">
+                
+                <div id="checkboxes-exclusao" style="margin-bottom: 1rem;">
+                    </div>
+                
+                <button type="submit" id="btnExcluirParcial" class="btn-perigo" disabled>Apagar Dados Selecionados</button>
+            </form>
+        </section>
 
     </main>
 

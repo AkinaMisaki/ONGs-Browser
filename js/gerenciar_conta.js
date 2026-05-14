@@ -1,5 +1,83 @@
 document.addEventListener('DOMContentLoaded', function () {
 
+    const containerInfo = document.getElementById('info-usuario-container');
+    const containerCheckboxes = document.getElementById('checkboxes-exclusao');
+
+    async function carregarDadosUsuario() {
+        if (!containerInfo || !containerCheckboxes) return;
+
+        const dados = new FormData();
+        dados.append('acao', 'resgatar_dados_parciais');
+        const csrfToken = document.querySelector('input[name="csrf_token"]')?.value; 
+        if(csrfToken) dados.append('csrf_token', csrfToken);
+
+        try {
+            const resposta = await fetch('../controller/gerenciar_conta.php', { method: 'POST', body: dados });
+            const resultado = await resposta.json();
+
+            if (resultado.sucesso) {
+                renderizarTelaParcial(resultado.dados);
+            } else {
+                mostrarMensagem(resultado.mensagem, 'erro');
+            }
+        } catch (erro) {
+            console.error(erro);
+            mostrarMensagem('Erro ao carregar seus dados.', 'erro');
+        }
+    }
+
+    function renderizarTelaParcial(dados) {
+        let htmlInfo = '';
+        let htmlChecks = '';
+
+        const camposProtegidos = ['nome_usuario', 'email'];
+
+        Object.entries(dados).forEach(([chave, valor]) => {
+            if (valor) {
+                htmlInfo += `<p><strong>${chave.toUpperCase()}:</strong> ${valor}</p>`;
+                if (!camposProtegidos.includes(chave)) {
+                    htmlChecks += `
+                        <label class="checkbox-label" style="margin-bottom: 0.5rem; display: block;">
+                            <input type="checkbox" name="campos_exclusao[]" value="${chave}">
+                            Remover ${chave.toUpperCase()}
+                        </label>
+                    `;
+                }
+            }
+        });
+
+        containerInfo.innerHTML = htmlInfo;
+        
+        const btnExcluir = document.getElementById('btnExcluirParcial');
+        if (htmlChecks === '') {
+            containerCheckboxes.innerHTML = '<p style="color: green;">Nenhum dado adicional armazenado.</p>';
+            if(btnExcluir) btnExcluir.disabled = true;
+        } else {
+            containerCheckboxes.innerHTML = htmlChecks;
+            if(btnExcluir) btnExcluir.disabled = false;
+        }
+    }
+
+    carregarDadosUsuario();
+
+    const formExclusaoParcial = document.getElementById('formExclusaoParcial');
+    if (formExclusaoParcial) {
+        formExclusaoParcial.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const marcados = formExclusaoParcial.querySelectorAll('input[name="campos_exclusao[]"]:checked');
+            if (marcados.length === 0) {
+                mostrarMensagem('Selecione pelo menos um dado para excluir.', 'erro');
+                return;
+            }
+            if (!window.confirm('Tem certeza que deseja apagar os dados selecionados?')) return;
+            await enviarFormulario(formExclusaoParcial, '../controller/gerenciar_conta.php', function (resultado) {
+                if (resultado.sucesso) {
+                    carregarDadosUsuario();
+                }
+            });
+        });
+    }
+
     // --- Alterar Nome ---
     const formNome = document.getElementById('formAlterarNome');
     if (formNome) {
