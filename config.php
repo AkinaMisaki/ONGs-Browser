@@ -32,39 +32,54 @@ function aes_decrypt(string $encoded, string $chave): string {
 // Posições só existem no código-fonte — não ficam no .env
 $posicoes = [];
 
-$env = (function(string $path): array {
-    $out = [];
-    foreach (file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
-        $line = trim($line);
-        if ($line === '' || $line[0] === '#' || $line[0] === ';') continue;
-        $pos = strpos($line, '=');
-        if ($pos === false) continue;
-        $key = trim(substr($line, 0, $pos));
-        $val = trim(substr($line, $pos + 1));
-        if (strlen($val) >= 2 && $val[0] === '"' && $val[strlen($val)-1] === '"') {
-            $val = substr($val, 1, -1);
+$envPath = dirname(__DIR__) . '/../config/.env';
+$hasEnv  = file_exists($envPath);
+
+if ($hasEnv) {
+    $env = (function(string $path): array {
+        $out = [];
+        foreach (file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+            $line = trim($line);
+            if ($line === '' || $line[0] === '#' || $line[0] === ';') continue;
+            $pos = strpos($line, '=');
+            if ($pos === false) continue;
+            $key = trim(substr($line, 0, $pos));
+            $val = trim(substr($line, $pos + 1));
+            if (strlen($val) >= 2 && $val[0] === '"' && $val[strlen($val)-1] === '"') {
+                $val = substr($val, 1, -1);
+            }
+            $out[$key] = $val;
         }
-        $out[$key] = $val;
-    }
-    return $out;
-})(dirname(__DIR__) . '/../config/.env');
-$salt = hex2bin($env['CHAVE_SALT']); // gerado uma vez e salvo no .env
+        return $out;
+    })($envPath);
 
-// Deriva a chave AES a partir da música + posições + salt
-$senha = extrairSenha(dirname(__DIR__) . '/../config/childrenofthecity.txt', $posicoes);
-$chave = hash_pbkdf2('sha256', $senha, $salt, 200000, 32, true);
+    $salt  = hex2bin($env['CHAVE_SALT']);
+    $senha = extrairSenha(dirname(__DIR__) . '/../config/childrenofthecity.txt', $posicoes);
+    $chave = hash_pbkdf2('sha256', $senha, $salt, 200000, 32, true);
 
-// ─── Conexão ───────────────────────────────────────────────
-$db_host         = env_val($env['DB_HOST']);
-$db_user         = base64_decode(aes_decrypt($env['DB_USER'],         $chave));
-$db_name         = base64_decode(aes_decrypt($env['DB_NAME'],         $chave));
-$db_port         = (int) $env['DB_PORT'];
-$db_pass         = base64_decode(aes_decrypt($env['DB_PASS'],         $chave));
-$SMTP_PASSWORD   = base64_decode(aes_decrypt($env['SMTP_PASSWORD'],   $chave));
-$CAPTCHA_SITE        = env_val($env['RECAPTCHA_SITE']);
-$CAPTCHA_SECRETA     = base64_decode(aes_decrypt($env['RECAPTCHA_SECRET'],    $chave));
-$TELEGRAM_BOT_TOKEN  = base64_decode(aes_decrypt($env['TELEGRAM_BOT_TOKEN'],  $chave));
-$TEST_ENV            = aes_decrypt($env['TEST_ENV'],$chave);
+    $db_host            = env_val($env['DB_HOST']);
+    $db_user            = base64_decode(aes_decrypt($env['DB_USER'],           $chave));
+    $db_name            = base64_decode(aes_decrypt($env['DB_NAME'],           $chave));
+    $db_port            = (int) $env['DB_PORT'];
+    $db_pass            = base64_decode(aes_decrypt($env['DB_PASS'],           $chave));
+    $SMTP_PASSWORD      = base64_decode(aes_decrypt($env['SMTP_PASSWORD'],     $chave));
+    $CAPTCHA_SITE       = env_val($env['RECAPTCHA_SITE']);
+    $CAPTCHA_SECRETA    = base64_decode(aes_decrypt($env['RECAPTCHA_SECRET'],  $chave));
+    $TELEGRAM_BOT_TOKEN = base64_decode(aes_decrypt($env['TELEGRAM_BOT_TOKEN'], $chave));
+    $TEST_ENV           = aes_decrypt($env['TEST_ENV'], $chave);
+} else {
+    // Default XAMPP settings (no .env present)
+    $db_host            = 'localhost';
+    $db_user            = 'root';
+    $db_pass            = '';
+    $db_name            = 'universidade';
+    $db_port            = 3306;
+    $SMTP_PASSWORD      = '';
+    $CAPTCHA_SITE       = '';
+    $CAPTCHA_SECRETA    = '';
+    $TELEGRAM_BOT_TOKEN = '';
+    $TEST_ENV           = '';
+}
 
 $conn = new mysqli($db_host, $db_user, $db_pass, $db_name, $db_port);
 if ($conn->connect_error) {
