@@ -1,9 +1,6 @@
 <?php
 session_start();
-if (!isset($_SESSION['captcha_aprovado']) || $_SESSION['captcha_aprovado'] !== true) {
-    header('Location: /universidade/view/captcha_view.php');
-    exit;
-}
+include_once __DIR__ . '/../config.php';
 
 ?>
 
@@ -15,6 +12,7 @@ if (!isset($_SESSION['captcha_aprovado']) || $_SESSION['captcha_aprovado'] !== t
     <title>Minha Página de Prática</title>
     
     <link rel="stylesheet" href="css/registro_usuario.css">
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
 
@@ -40,6 +38,7 @@ if (!isset($_SESSION['captcha_aprovado']) || $_SESSION['captcha_aprovado'] !== t
             <div class="alerta-senha">
                 Lembre-se: sua senha deve ter no mínimo 8 caracteres, incluindo letras maiúsculas, minúsculas, números e pelo menos um caractere especial (!, @, #, etc).
             </div>
+            <div class="g-recaptcha" data-sitekey="<?php echo $CAPTCHA_SITE; ?>"></div>
             <button type="submit">Cadastrar</button>
         </form>
     </main>

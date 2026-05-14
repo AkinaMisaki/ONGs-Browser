@@ -19,6 +19,7 @@ async function realizarLogin(event) {
     const dadosFormulario = new FormData();
     dadosFormulario.append('usuario', campoUsuario);
     dadosFormulario.append('senha', campoSenha);
+    dadosFormulario.append('g-recaptcha-response', grecaptcha.getResponse());
     console.log('Dados do formulário:', {
         usuario: campoUsuario,
         senha: campoSenha

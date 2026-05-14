@@ -32,6 +32,7 @@ async function realizarCadastroUsuario(event) {
     dadosFormulario.append('email', campoEmail);
     dadosFormulario.append('senha', campoSenha);
     dadosFormulario.append('nome', campoNome);
+    dadosFormulario.append('g-recaptcha-response', grecaptcha.getResponse());
     console.log('Dados do formulário empacotados:', {
         usuario: campoUsuario,
         email: campoEmail,

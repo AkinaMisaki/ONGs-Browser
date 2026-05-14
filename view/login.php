@@ -1,19 +1,19 @@
 <?php
 session_start();
-if (!isset($_SESSION['captcha_aprovado']) || $_SESSION['captcha_aprovado'] !== true) {
-    header('Location: /universidade/view/captcha_view.php');
-    exit;
-}
+
+include_once __DIR__ . '/../config.php';
+
 
 ?>
 
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">w
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <link rel="stylesheet" href="css/login_usuario.css">
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
 
@@ -32,7 +32,7 @@ if (!isset($_SESSION['captcha_aprovado']) || $_SESSION['captcha_aprovado'] !== t
             <div class="opcoes-senha">
                 <a href="recuperar_senha.php" class="link-esqueceu">Esqueceu a senha?</a>
             </div>
-
+            <div class="g-recaptcha" data-sitekey="<?php echo $CAPTCHA_SITE; ?>"></div>
             <button type="submit">Login</button>
         </form>
         
