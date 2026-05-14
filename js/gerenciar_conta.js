@@ -1,61 +1,63 @@
 document.addEventListener('DOMContentLoaded', function () {
 
-    const containerInfo = document.getElementById('info-usuario-container');
-    const containerCheckboxes = document.getElementById('checkboxes-exclusao');
+    const containerDados = document.getElementById('dados-parciais-container');
 
     async function carregarDadosUsuario() {
-        if (!containerInfo || !containerCheckboxes) return;
+        if (!containerDados) return;
 
         const dados = new FormData();
         dados.append('acao', 'resgatar_dados_parciais');
-        const csrfToken = document.querySelector('input[name="csrf_token"]')?.value; 
-        if(csrfToken) dados.append('csrf_token', csrfToken);
+        const csrfToken = document.querySelector('input[name="csrf_token"]')?.value;
+        if (csrfToken) dados.append('csrf_token', csrfToken);
 
         try {
             const resposta = await fetch('../controller/gerenciar_conta.php', { method: 'POST', body: dados });
             const resultado = await resposta.json();
-
             if (resultado.sucesso) {
                 renderizarTelaParcial(resultado.dados);
             } else {
-                mostrarMensagem(resultado.mensagem, 'erro');
+                containerDados.innerHTML = '<p style="color:#721c24;">Erro ao carregar dados.</p>';
             }
         } catch (erro) {
             console.error(erro);
-            mostrarMensagem('Erro ao carregar seus dados.', 'erro');
+            containerDados.innerHTML = '<p style="color:#721c24;">Erro ao carregar dados.</p>';
         }
     }
 
     function renderizarTelaParcial(dados) {
-        let htmlInfo = '';
-        let htmlChecks = '';
+        const btnExcluir = document.getElementById('btnExcluirParcial');
+        const labels = { cpf: 'CPF', rg: 'RG', telefone: 'Telefone' };
+        const entradas = Object.entries(dados).filter(([, v]) => v);
 
-        const camposProtegidos = ['nome_usuario', 'email'];
+        if (entradas.length === 0) {
+            containerDados.innerHTML = '<p style="color:green;font-size:0.9rem;">Nenhum dado adicional armazenado.</p>';
+            if (btnExcluir) btnExcluir.disabled = true;
+            return;
+        }
 
-        Object.entries(dados).forEach(([chave, valor]) => {
-            if (valor) {
-                htmlInfo += `<p><strong>${chave.toUpperCase()}:</strong> ${valor}</p>`;
-                if (!camposProtegidos.includes(chave)) {
-                    htmlChecks += `
-                        <label class="checkbox-label" style="margin-bottom: 0.5rem; display: block;">
-                            <input type="checkbox" name="campos_exclusao[]" value="${chave}">
-                            Remover ${chave.toUpperCase()}
-                        </label>
-                    `;
-                }
-            }
+        containerDados.innerHTML = entradas.map(([chave, valor]) => `
+            <div class="dado-row">
+                <label class="checkbox-label dado-check-label">
+                    <input type="checkbox" name="campos_exclusao[]" value="${chave}" class="dado-check">
+                    <strong>${labels[chave] || chave.toUpperCase()}</strong>
+                </label>
+                <span class="dado-valor oculto">${valor}</span>
+                <button type="button" class="btn-revelar">Mostrar</button>
+            </div>
+        `).join('');
+
+        containerDados.querySelectorAll('.btn-revelar').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const span = this.previousElementSibling;
+                const agora = span.classList.toggle('oculto');
+                this.textContent = agora ? 'Mostrar' : 'Ocultar';
+            });
         });
 
-        containerInfo.innerHTML = htmlInfo;
-        
-        const btnExcluir = document.getElementById('btnExcluirParcial');
-        if (htmlChecks === '') {
-            containerCheckboxes.innerHTML = '<p style="color: green;">Nenhum dado adicional armazenado.</p>';
-            if(btnExcluir) btnExcluir.disabled = true;
-        } else {
-            containerCheckboxes.innerHTML = htmlChecks;
-            if(btnExcluir) btnExcluir.disabled = false;
+        function atualizarBtnExcluir() {
+            if (btnExcluir) btnExcluir.disabled = !containerDados.querySelector('.dado-check:checked');
         }
+        containerDados.querySelectorAll('.dado-check').forEach(cb => cb.addEventListener('change', atualizarBtnExcluir));
     }
 
     carregarDadosUsuario();

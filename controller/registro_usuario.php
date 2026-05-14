@@ -46,14 +46,26 @@ $activationExpire  = date("Y-m-d H:i:s", strtotime("+24 hours"));
 
 
 // Unicidade 
-$stmt = $conn->prepare("SELECT id FROM usuario WHERE email = ? OR usuario_login = ? LIMIT 1");
+$stmt = $conn->prepare("SELECT email, usuario_login FROM usuario WHERE email = ? OR usuario_login = ? LIMIT 1");
 $stmt->bind_param("ss", $rawEmail, $rawUsuario);
 $stmt->execute();
-$stmt->store_result();
-if ($stmt->num_rows > 0) {
+$stmt->bind_result($emailEncontrado, $loginEncontrado);
+
+if ($stmt->fetch()) {
+    $emailEmUso = $emailEncontrado === $rawEmail;
+    $loginEmUso = $loginEncontrado === $rawUsuario;
+
+    if ($emailEmUso && $loginEmUso) {
+        $mensagem = "E-mail e usuário já cadastrados.";
+    } elseif ($emailEmUso) {
+        $mensagem = "E-mail já cadastrado.";
+    } else {
+        $mensagem = "Nome de usuário já cadastrado.";
+    }
+
     $stmt->close();
     $conn->close();
-    echo json_encode(["sucesso" => false, "mensagem" => "Usuário ou e-mail já cadastrados."]);
+    echo json_encode(["sucesso" => false, "mensagem" => $mensagem]);
     exit;
 }
 $stmt->close();

@@ -79,7 +79,8 @@ form input {
     color: #333;
 }
 
-form button[type="button"] {
+form button[type="button"],
+form button[type="submit"] {
     background-color: #28a745;
     color: white;
     border: none;
@@ -89,9 +90,11 @@ form button[type="button"] {
     border-radius: 4px;
     margin-top: 1rem;
     font-weight: bold;
+    transition: background-color 0.3s;
 }
 
-form button[type="button"]:hover {
+form button[type="button"]:hover,
+form button[type="submit"]:hover {
     background-color: #218838;
 }
 

@@ -233,6 +233,54 @@ main > h1 {
     background-color: #b02a37 !important;
 }
 
+/* --- Dados Parciais (linha com checkbox + valor oculto + botão revelar) --- */
+.dado-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.dado-row:last-child {
+    border-bottom: none;
+}
+
+.dado-check-label {
+    flex-shrink: 0;
+    min-width: 120px;
+}
+
+.dado-valor {
+    flex: 1;
+    font-family: monospace;
+    font-size: 0.95rem;
+    color: #333;
+    transition: filter 0.2s;
+}
+
+.dado-valor.oculto {
+    filter: blur(5px);
+    user-select: none;
+    pointer-events: none;
+}
+
+.btn-revelar {
+    flex-shrink: 0;
+    background: none;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 0.25rem 0.65rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    color: #555;
+    transition: background 0.2s;
+}
+
+.btn-revelar:hover {
+    background: #f0f0f0;
+}
+
 /* --- Checkbox --- */
 .checkbox-label {
     display: flex;

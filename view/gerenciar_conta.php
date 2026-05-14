@@ -6,33 +6,7 @@ if (!isset($_SESSION['usuario_id'])) {
     exit;
 }
 
-include __DIR__ . '/../config.php';
-
-$stmt = $conn->prepare("SELECT u.nome_usuario, u.email, u.usuario_login, uv.codVerificador, uv.telegram_id FROM usuario u INNER JOIN usuario_verificacao uv ON uv.fk_usuario = u.id_usuario WHERE u.id_usuario = ?");
-$stmt->bind_param("i", $_SESSION['usuario_id']);
-$stmt->execute();
-$result = $stmt->get_result();
-
-if ($result->num_rows !== 1) {
-    session_destroy();
-    header('Location: login.php');
-    exit;
-}
-
-$usuario = $result->fetch_assoc();
-$stmt->close();
-
-$stmtProp = $conn->prepare("SELECT id_prop FROM proprietario_ong WHERE fk_usuario = ? LIMIT 1");
-$stmtProp->bind_param("i", $_SESSION['usuario_id']);
-$stmtProp->execute();
-$eProprietario = $stmtProp->get_result()->num_rows > 0;
-$stmtProp->close();
-
-$conn->close();
-
-$_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-$tem2fa       = !empty($usuario['codVerificador']);
-$temTelegram  = !empty($usuario['telegram_id']);
+include __DIR__ . '/../controller/init/gerenciar_conta.php';
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -195,6 +169,21 @@ $temTelegram  = !empty($usuario['telegram_id']);
                 </button>
             <?php endif; ?>
         </section>
+        <!-- LGPD - Dados Pessoais Adicionais + Exclusão Parcial -->
+        <section class="card card-perigo">
+            <h2>Dados do Perfil Adicional</h2>
+            <p class="lgpd-descricao">
+                Selecione os campos que deseja remover. Clique em <strong>Mostrar</strong> para revelar o valor antes de decidir.
+            </p>
+            <form id="formExclusaoParcial">
+                <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                <input type="hidden" name="acao" value="excluir_dados_parciais">
+                <div id="dados-parciais-container">
+                    <p><em>Carregando...</em></p>
+                </div>
+                <button type="submit" id="btnExcluirParcial" class="btn-perigo" disabled style="margin-top:1rem;">Apagar Dados Selecionados</button>
+            </form>
+        </section>
 
         <!-- LGPD - Deletar Conta -->
         <section class="card card-perigo">
@@ -214,32 +203,6 @@ $temTelegram  = !empty($usuario['telegram_id']);
                     Entendo que esta ação é irreversível e que todos os meus dados serão excluídos.
                 </label>
                 <button type="submit" class="btn-perigo">Excluir Minha Conta</button>
-            </form>
-        </section>
-        <!-- LGPD - Dados Pessoais Adicionais -->
-        <section class="card card-info">
-            <h2>Dados Pessoais Adicionais</h2>
-            <p class="lgpd-descricao">
-                Abaixo estão listados os dados adicionais vinculados ao seu perfil.
-            </p>
-            <div id="info-usuario-container">
-                <p><em>Carregando seus dados...</em></p>
-            </div>
-        </section>
-        <!-- LGPD - Exclusão Parcial de Dados -->
-        <section class="card card-perigo">
-            <h2>Exclusão Parcial de Dados</h2>
-            <p class="lgpd-descricao">
-                Em conformidade com a <strong>LGPD</strong>, você pode optar por excluir informações específicas do seu perfil sem deletar sua conta inteira. Selecione os dados que deseja remover permanentemente:
-            </p>
-            <form id="formExclusaoParcial">
-                <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
-                <input type="hidden" name="acao" value="excluir_dados_parciais">
-                
-                <div id="checkboxes-exclusao" style="margin-bottom: 1rem;">
-                    </div>
-                
-                <button type="submit" id="btnExcluirParcial" class="btn-perigo" disabled>Apagar Dados Selecionados</button>
             </form>
         </section>
 

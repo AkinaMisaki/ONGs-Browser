@@ -304,20 +304,20 @@ if ($acao === 'desconectar_telegram') {
 }
 
 if ($acao === 'resgatar_dados_parciais') {
-    $sql = "SELECT u.nome_usuario, u.email, d.cpf, d.rg, d.telefone 
-            FROM usuario u
-            LEFT JOIN prorpietario_ong d ON u.id_usuario = d.fk_usuario
-            WHERE u.id_usuario = ?";   
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $id_usuario);
-    $stmt->execute();
-    $dados = $stmt->get_result()->fetch_assoc();
-    $stmt->close();
-    $conn->close();
-    if ($dados) {
-        echo json_encode(['sucesso' => true, 'dados' => $dados]);
-    } else {
-        echo json_encode(['sucesso' => false, 'mensagem' => 'Não foi possível resgatar os dados.']);
+    try {
+        $sql = "SELECT p.cpf, p.rg, p.telefone
+                FROM proprietario_ong p
+                WHERE p.fk_usuario = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $id_usuario);
+        $stmt->execute();
+        $dados = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+        $conn->close();
+        echo json_encode(['sucesso' => true, 'dados' => $dados ?? []]);
+    } catch (Throwable $e) {
+        error_log($e->getMessage());
+        echo json_encode(['sucesso' => false, 'mensagem' => 'Erro ao resgatar dados.']);
     }
     exit;
 }
@@ -328,32 +328,24 @@ if ($acao === 'excluir_dados_parciais') {
         echo json_encode(['sucesso' => false, 'mensagem' => 'Nenhum campo válido selecionado.']);
         exit;
     }
-    $colunas_permitidas = ['cpf', 'rg', 'telefone']; 
-    $campos_seguros = [];
-    foreach ($campos_recebidos as $campo) {
-        if (in_array($campo, $colunas_permitidas)) {
-            $campos_seguros[] = $campo;
-        }
-    }
+    $colunas_permitidas = ['cpf', 'rg', 'telefone'];
+    $campos_seguros = array_values(array_filter($campos_recebidos, fn($c) => in_array($c, $colunas_permitidas)));
     if (empty($campos_seguros)) {
         echo json_encode(['sucesso' => false, 'mensagem' => 'Seleção inválida.']);
         exit;
     }
-    $set_clauses = [];
-    foreach ($campos_seguros as $campo) {
-        $set_clauses[] = "$campo = NULL"; 
-    }
-    $set_string = implode(', ', $set_clauses);
-    $sql = "UPDATE prorpietario_ong SET $set_string WHERE fk_usuario = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $id_usuario);
-    if ($stmt->execute()) {
+    $set_string = implode(', ', array_map(fn($c) => "$c = NULL", $campos_seguros));
+    try {
+        $stmt = $conn->prepare("UPDATE proprietario_ong SET $set_string WHERE fk_usuario = ?");
+        $stmt->bind_param("i", $id_usuario);
+        $stmt->execute();
+        $stmt->close();
+        $conn->close();
         echo json_encode(['sucesso' => true, 'mensagem' => 'Dados removidos com sucesso.']);
-    } else {
+    } catch (Throwable $e) {
+        error_log($e->getMessage());
         echo json_encode(['sucesso' => false, 'mensagem' => 'Falha ao remover os dados.']);
     }
-    $stmt->close();
-    $conn->close();
     exit;
 }
 
