@@ -110,7 +110,7 @@ if ($acao === 'alterar_senha') {
 // AÇÃO: Exportar Dados (LGPD — Art. 18, portabilidade)
 // -----------------------------------------------------------------------
 if ($acao === 'exportar_dados') {
-    $stmt = $conn->prepare("SELECT u.nome_usuario, u.email, u.usuario_login, uv.statusConta FROM usuario u INNER JOIN usuario_verificacao uv ON uv.fk_usuario = u.id_usuario WHERE u.id_usuario = ?");
+    $stmt = $conn->prepare("SELECT u.nome_usuario, u.email, p.cpf, p.rg, p.telefone FROM usuario u INNER JOIN proprietario_ong p ON p.fk_usuario = u.id_usuario WHERE u.id_usuario = ?");
     $stmt->bind_param("i", $id_usuario);
     $stmt->execute();
     $dados = $stmt->get_result()->fetch_assoc();
@@ -128,8 +128,9 @@ if ($acao === 'exportar_dados') {
         'dados_pessoais'  => [
             'nome'          => $dados['nome_usuario'],
             'email'         => $dados['email'],
-            'usuario_login' => $dados['usuario_login'],
-            'status_conta'  => $dados['statusConta'],
+            'cpf'           => isset($dados['cpf']) ? $dados['cpf'] : '',
+            'rg'            => isset($dados['rg']) ? $dados['rg'] : '',
+            'telefone'      => isset($dados['telefone']) ? $dados['telefone'] : '',
         ],
     ];
 
@@ -303,9 +304,9 @@ if ($acao === 'desconectar_telegram') {
 }
 
 if ($acao === 'resgatar_dados_parciais') {
-    $sql = "SELECT u.nome_usuario, u.email, d.CPF, d.idade, d.genero, d.pais, d.uf, d.cidade 
+    $sql = "SELECT u.nome_usuario, u.email, d.cpf, d.rg, d.telefone 
             FROM usuario u
-            LEFT JOIN Usuario_Dados d ON u.id_usuario = d.fk_usuario_id
+            LEFT JOIN prorpietario_ong d ON u.id_usuario = d.fk_usuario
             WHERE u.id_usuario = ?";   
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $id_usuario);
@@ -327,7 +328,7 @@ if ($acao === 'excluir_dados_parciais') {
         echo json_encode(['sucesso' => false, 'mensagem' => 'Nenhum campo válido selecionado.']);
         exit;
     }
-    $colunas_permitidas = ['CPF', 'idade', 'genero', 'pais', 'uf', 'cidade']; 
+    $colunas_permitidas = ['cpf', 'rg', 'telefone']; 
     $campos_seguros = [];
     foreach ($campos_recebidos as $campo) {
         if (in_array($campo, $colunas_permitidas)) {
@@ -343,7 +344,7 @@ if ($acao === 'excluir_dados_parciais') {
         $set_clauses[] = "$campo = NULL"; 
     }
     $set_string = implode(', ', $set_clauses);
-    $sql = "UPDATE Usuario_Dados SET $set_string WHERE fk_usuario_id = ?";
+    $sql = "UPDATE prorpietario_ong SET $set_string WHERE fk_usuario = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $id_usuario);
     if ($stmt->execute()) {
