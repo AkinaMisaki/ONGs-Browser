@@ -15,6 +15,18 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     exit;
 }
 
+$captchaToken = $_POST['g-recaptcha-response'] ?? '';
+if (empty($captchaToken)) {
+    echo json_encode(["sucesso" => false, "mensagem" => "Por favor, confirme que você não é um robô."]);
+    exit;
+}
+$respostaGoogle = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret={$CAPTCHA_SECRETA}&response={$captchaToken}");
+$resultadoCaptcha = json_decode($respostaGoogle, true);
+if (!$resultadoCaptcha['success']) {
+    echo json_encode(["sucesso" => false, "mensagem" => "Falha na verificação do reCAPTCHA. Tente novamente."]);
+    exit;
+}
+
 $rawNome    = (isset($_POST['nome'])    && is_string($_POST['nome']))    ? trim($_POST['nome'])    : '';
 $rawEmail   = (isset($_POST['email'])   && is_string($_POST['email']))   ? trim($_POST['email'])   : '';
 $rawUsuario = (isset($_POST['usuario']) && is_string($_POST['usuario'])) ? trim($_POST['usuario']) : '';
