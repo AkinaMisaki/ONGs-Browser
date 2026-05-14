@@ -52,7 +52,7 @@ $result = $conn->query($sql);
             while($row = $result->fetch_assoc()) {
                 $src = !empty($row['caminho_arquivo'])
                     ? htmlspecialchars($row['caminho_arquivo'])
-                    : '/universidade/uploads/placeholder.png';
+                    : 'uploads/placeholder.png';
                 $alt = htmlspecialchars($row['nome_ong']);
                 $imgHtml = "<img class=\"card-thumb\" src=\"{$src}\" alt=\"{$alt}\">";
 

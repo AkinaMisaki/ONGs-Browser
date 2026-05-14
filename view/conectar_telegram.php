@@ -11,7 +11,7 @@ $row = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 
 if (!empty($row['telegram_id'])) {
-    header('Location: /universidade/view/gerenciar_conta.php');
+    header('Location: gerenciar_conta.php');
     exit;
 }
 
@@ -107,7 +107,7 @@ $passkey = htmlspecialchars($row['telegram_pass']);
         </section>
 
         <section class="card">
-            <button type="button" class="btn-voltar" onclick="window.location.href='/universidade/view/gerenciar_conta.php'">
+            <button type="button" class="btn-voltar" onclick="window.location.href='gerenciar_conta.php'">
                 Voltar para Gerenciar Conta
             </button>
         </section>

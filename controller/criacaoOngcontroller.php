@@ -34,7 +34,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $extensao = pathinfo($arquivo['name'], PATHINFO_EXTENSION);
             $novoNome = uniqid() . "." . $extensao; 
             $caminhoCompleto = $diretorioDestino . $novoNome;
-            $caminhoBanco = '/universidade/uploads/' . $novoNome; 
+            $caminhoBanco = '/uploads/' . $novoNome; 
 
             if (move_uploaded_file($arquivo['tmp_name'], $caminhoCompleto)) {
                 try {

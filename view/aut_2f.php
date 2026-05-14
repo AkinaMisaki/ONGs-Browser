@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (!isset($_SESSION['2fa_pending_id'])) {
-    header('Location: /universidade/view/login.php');
+    header('Location: login.php');
     exit;
 }
 ?>
@@ -34,9 +34,7 @@ if (!isset($_SESSION['2fa_pending_id'])) {
     </style>
 </head>
 <body>
-    <div class="barra-fixa">
-        <span>Verificação em Dois Fatores</span>
-    </div>
+    <?php include __DIR__ . '/reusable/header.php'; ?>
 
     <main>
         <h1>Verificação de Segurança</h1>
@@ -53,7 +51,7 @@ if (!isset($_SESSION['2fa_pending_id'])) {
             <button type="submit">Verificar</button>
         </form>
         <div class="login-links">
-            <a href="/universidade/view/login.php">Cancelar e voltar ao login</a>
+            <a href="login.php">Cancelar e voltar ao login</a>
         </div>
     </main>
 

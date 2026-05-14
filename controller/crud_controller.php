@@ -323,7 +323,7 @@ function deleteRecord() {
 // ── Broadcast via Telegram ─────────────────────────────────────────────────
 // Envia uma mensagem para todos os usuários com telegram_id cadastrado.
 function broadcastSend() {
-    global $conn, $env;
+    global $conn, $env, $TELEGRAM_BOT_TOKEN;
 
     $message = trim($_POST['message'] ?? '');
     if ($message === '') {
@@ -331,7 +331,7 @@ function broadcastSend() {
         return;
     }
 
-    $botToken = $env['TELEGRAM_BOT_TOKEN'] ?? '';
+    $botToken = $TELEGRAM_BOT_TOKEN ?? '';
     if (empty($botToken)) {
         echo json_encode(['sucesso' => false, 'mensagem' => 'Token do bot Telegram não configurado.']);
         return;

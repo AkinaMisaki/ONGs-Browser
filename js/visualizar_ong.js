@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('ong-descricao').textContent = resultado.descricao;
 
             const img = document.getElementById('ong-imagem');
-            img.src = resultado.caminho_arquivo || '/universidade/uploads/placeholder.png';
+            img.src = resultado.caminho_arquivo || '../uploads/placeholder.png';
             img.alt = 'Imagem da ' + resultado.nome_ong;
             document.getElementById('ong-imagem-container').style.display = 'block';
 

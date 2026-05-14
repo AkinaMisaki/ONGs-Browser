@@ -34,7 +34,9 @@ if ($result->num_rows === 1) {
     $stmt->bind_param("sss", $token, $expire, $email);
     $stmt->execute();
 
-    $resetLink = "https://hanafuda.moe/universidade/view/alterar_senha.php?token=$token";
+    $scheme       = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+    $_proj        = rtrim(str_replace('\\', '/', str_replace(realpath($_SERVER['DOCUMENT_ROOT']), '', realpath(__DIR__ . '/..'))), '/');
+    $resetLink    = $scheme . '://' . $_SERVER['HTTP_HOST'] . $_proj . '/view/alterar_senha.php?token=' . $token;
 
     // Manda email por SMTP
     $mail = new PHPMailer(true);

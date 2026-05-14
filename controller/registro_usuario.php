@@ -86,7 +86,9 @@ try {
 
 $conn->close();
 
-$activationLink = "https://hanafuda.moe/universidade/view/ativar_conta.php?token=" . urlencode($activationToken);
+$scheme         = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+$_proj          = rtrim(str_replace('\\', '/', str_replace(realpath($_SERVER['DOCUMENT_ROOT']), '', realpath(__DIR__ . '/..'))), '/');
+$activationLink = $scheme . '://' . $_SERVER['HTTP_HOST'] . $_proj . '/view/ativar_conta.php?token=' . urlencode($activationToken);
 $nomeSeguro     = htmlspecialchars($rawNome, ENT_QUOTES, 'UTF-8');
 
 $mail = new PHPMailer(true);

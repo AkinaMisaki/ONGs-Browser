@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (resultado.sucesso) {
                 mostrarMensagem('Verificado! Redirecionando...', 'sucesso');
                 setTimeout(() => {
-                    window.location.href = '/universidade/index.php';
+                    window.location.href = '../index.php';
                 }, 1500);
             } else {
                 const erros = {
@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 mostrarMensagem(erros[resultado.mensagem] || resultado.mensagem, 'erro');
 
                 if (resultado.mensagem === 'sessao_invalida') {
-                    setTimeout(() => { window.location.href = '/universidade/view/login.php'; }, 2500);
+                    setTimeout(() => { window.location.href = 'login.php'; }, 2500);
                 } else {
                     btn.disabled    = false;
                     btn.textContent = 'Verificar';

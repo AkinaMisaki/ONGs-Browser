@@ -5,7 +5,7 @@ include __DIR__ . '/../config.php';
 $token = $_GET['token'] ?? null;
 
 if (!$token) {
-    header('Location: /login.php');
+    header('Location: login.php');
     exit;
 }
 
@@ -17,7 +17,7 @@ $result = $stmt->get_result();
 if ($result->num_rows !== 1) {
     $stmt->close();
     $conn->close();
-    header('Location: /login.php?erro=invalid_token');
+    header('Location: login.php?erro=invalid_token');
     exit;
 }
 
@@ -26,7 +26,7 @@ $stmt->close();
 $conn->close();
 
 if (strtotime($user['reset_expire']) < time()) {
-    header('Location: /login.php?erro=token_expired');
+    header('Location: login.php?erro=token_expired');
     exit;
 }
 
@@ -42,9 +42,7 @@ $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     <link rel="stylesheet" href="css/alterar_senha.css">
 </head>
 <body>
-    <div class="barra-fixa">
-        <span>Alterar Senha</span>
-    </div>
+    <?php include __DIR__ . '/reusable/header.php'; ?>
     <main>
         <h1>Alterar Senha</h1>
         <p id="mensagem"></p>

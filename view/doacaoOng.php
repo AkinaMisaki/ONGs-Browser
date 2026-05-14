@@ -19,13 +19,7 @@ if (!isset($_SESSION['usuario_id']) || $_SESSION['nivel_acesso'] !== 'doador_aut
 </head>
 <body>
 
-    <header class="barra-fixa">
-        <h1 style="color: white; margin: 0;">Painel de Doações</h1>
-        <nav>
-            <button onclick="window.location.href='dashboard_comum.php'">Voltar</button>
-            <button onclick="window.location.href='../controller/logout.php'" style="background-color: #dc3545; border-color: #c82333;">Sair</button>
-        </nav>
-    </header>
+    <?php include __DIR__ . '/reusable/header.php'; ?>
 
     <main>
         <section id="nova-doacao">

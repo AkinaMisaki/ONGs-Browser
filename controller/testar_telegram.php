@@ -29,7 +29,7 @@ if (empty($row['telegram_id'])) {
 }
 
 $chat_id   = $row['telegram_id'];
-$bot_token = $env['TELEGRAM_BOT_TOKEN'] ?? '';
+$bot_token = $TELEGRAM_BOT_TOKEN ?? '';
 
 if (empty($bot_token)) {
     echo json_encode(['sucesso' => false, 'mensagem' => 'Token do bot não configurado no servidor.']);

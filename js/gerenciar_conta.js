@@ -169,7 +169,7 @@ document.addEventListener('DOMContentLoaded', function () {
             await enviarFormulario(formDeletar, '../controller/gerenciar_conta.php', function (resultado) {
                 if (resultado.sucesso) {
                     mostrarMensagem('Conta excluída. Redirecionando...', 'sucesso');
-                    setTimeout(() => { window.location.href = '/universidade/index.php'; }, 2500);
+                    setTimeout(() => { window.location.href = '../index.php'; }, 2500);
                 }
             });
         });
@@ -298,7 +298,7 @@ function tratarErro(mensagem) {
     mostrarMensagem(erros[mensagem] || mensagem || 'Erro desconhecido.', 'erro');
 
     if (mensagem === 'nao_autenticado') {
-        setTimeout(() => { window.location.href = '/universidade/view/login.php'; }, 2000);
+        setTimeout(() => { window.location.href = 'login.php'; }, 2000);
     }
 }
 
@@ -316,7 +316,7 @@ function mostrarMensagem(texto, tipo = 'erro') {
 
 function realizarLogout() {
     fetch('../controller/logout.php', { method: 'GET' })
-        .finally(() => { window.location.href = '/universidade/view/login.php'; });
+        .finally(() => { window.location.href = 'login.php'; });
 }
 
 function testarTele() {

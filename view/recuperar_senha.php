@@ -8,13 +8,7 @@
 </head>
 <body>
 
-<header class="barra-fixa">
-    <nav>
-        <button onclick="window.location.href='../index.php'">Início</button>
-        <button onclick="window.location.href='sobre.html'">Sobre</button>
-        <button onclick="window.location.href='contato.html'">Contato</button>
-    </nav>
-</header>
+<?php include __DIR__ . '/reusable/header.php'; ?>
 
 <main>
     <h1>Recuperação de Senha</h1>
@@ -22,25 +16,16 @@
     <div id="mensagem-alerta"></div>
 
     <form id="formContato" onsubmit="realizarCadastroUsuario(event)">
-        <label for="new_passCheck">Email:</label>
-        <input 
-            type="email" 
-            id="new_mailCheck" 
-            name="email" 
+        <label for="new_mailCheck">Email:</label>
+        <input
+            type="email"
+            id="new_mailCheck"
+            name="email"
             placeholder="Digite seu email"
             autocomplete="email"
         >
         <button type="submit">Enviar</button>
     </form>
-
-    <div class="form-links">
-        <a href="login.php">Voltar ao Login</a>
-    </div>
-</main>
-
-<script src="../js/reset_senha.js"></script>
-</body>
-</html>
 
     <div class="form-links">
         <a href="login.php">Voltar ao Login</a>

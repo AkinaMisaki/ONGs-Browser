@@ -34,9 +34,9 @@ async function realizarLogin(event) {
 
         // Tratando a resposta do PHP
         if (resultado.sucesso && resultado.acao === '2fa_required') {
-            window.location.href = '/universidade/view/aut_2f.php';
+            window.location.href = 'aut_2f.php';
         } else if (resultado.sucesso) {
-            window.location.href = '/universidade/index.php';
+            window.location.href = '../index.php';
         } else {
             alert('Erro no Login:\n' + resultado.mensagem); // O \n quebra a linha no alert
         }

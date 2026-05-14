@@ -19,20 +19,18 @@ $token = htmlspecialchars(trim($_GET['token'] ?? ''), ENT_QUOTES, 'UTF-8');
     </style>
 </head>
 <body>
-    <div class="barra-fixa">
-        <span>Ativação de Conta</span>
-    </div>
+    <?php include __DIR__ . '/reusable/header.php'; ?>
     <main>
         <h1>Ativar Conta</h1>
 
         <?php if (empty($token)): ?>
             <p id="mensagem" class="erro">Link de ativação inválido ou ausente.</p>
-            <div id="acoes"><a href="/universidade/view/login.php">Ir para o Login</a></div>
+            <div id="acoes"><a href="login.php">Ir para o Login</a></div>
         <?php else: ?>
             <span id="icone" class="icone-status">⏳</span>
             <p id="mensagem">Verificando seu link de ativação...</p>
             <div id="acoes" style="display:none;">
-                <a href="/universidade/view/login.php">Ir para o Login</a>
+                <a href="login.php">Ir para o Login</a>
             </div>
         <?php endif; ?>
     </main>
@@ -69,7 +67,7 @@ $token = htmlspecialchars(trim($_GET['token'] ?? ''), ENT_QUOTES, 'UTF-8');
             document.getElementById('acoes').style.display = 'block';
 
             if (result.sucesso) {
-                setTimeout(() => { window.location.href = '/universidade/view/login.php'; }, 3000);
+                setTimeout(() => { window.location.href = 'login.php'; }, 3000);
             }
         } catch (e) {
             document.getElementById('icone').textContent    = '❌';

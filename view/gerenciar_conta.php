@@ -2,7 +2,7 @@
 session_start();
 
 if (!isset($_SESSION['usuario_id'])) {
-    header('Location: /universidade/view/login.php');
+    header('Location: login.php');
     exit;
 }
 
@@ -15,7 +15,7 @@ $result = $stmt->get_result();
 
 if ($result->num_rows !== 1) {
     session_destroy();
-    header('Location: /universidade/view/login.php');
+    header('Location: login.php');
     exit;
 }
 
@@ -44,15 +44,7 @@ $temTelegram  = !empty($usuario['telegram_id']);
 </head>
 <body>
 
-    <div class="barra-fixa">
-        <div class="header-container">
-            <h1>Gerenciar Conta</h1>
-            <nav>
-                <button onclick="window.location.href='/universidade/index.php'">Início</button>
-                <button onclick="realizarLogout()" class="btn-logout">Sair</button>
-            </nav>
-        </div>
-    </div>
+    <?php include __DIR__ . '/reusable/header.php'; ?>
 
     <main>
         <h1>Minha Conta</h1>

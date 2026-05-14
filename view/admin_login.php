@@ -107,11 +107,7 @@ $timeout = isset($_GET['timeout']);
 </head>
 <body>
 
-<header class="barra-fixa">
-    <nav>
-        <button onclick="window.location.href='../index.php'">Início</button>
-    </nav>
-</header>
+<?php include __DIR__ . '/reusable/header.php'; ?>
 
 <main class="login-main">
     <div class="shield">&#128274;</div>

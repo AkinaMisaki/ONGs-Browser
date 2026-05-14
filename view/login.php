@@ -30,7 +30,7 @@ if (!isset($_SESSION['captcha_aprovado']) || $_SESSION['captcha_aprovado'] !== t
             <input type="password" id="passCheck" name="password" placeholder="Digite sua senha">
 
             <div class="opcoes-senha">
-                <a href="recuperar_senha.html" class="link-esqueceu">Esqueceu a senha?</a>
+                <a href="recuperar_senha.php" class="link-esqueceu">Esqueceu a senha?</a>
             </div>
 
             <button type="submit">Login</button>
