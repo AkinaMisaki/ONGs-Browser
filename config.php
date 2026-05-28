@@ -32,7 +32,7 @@ function aes_decrypt(string $encoded, string $chave): string {
 // Posições só existem no código-fonte — não ficam no .env
 $posicoes = [];
 
-$envPath = dirname(__DIR__) . '/../config/.env';
+$envPath = dirname(__DIR__) . '/config/.env';
 $hasEnv  = file_exists($envPath);
 
 if ($hasEnv) {
@@ -54,7 +54,7 @@ if ($hasEnv) {
     })($envPath);
 
     $salt  = hex2bin($env['CHAVE_SALT']);
-    $senha = extrairSenha(dirname(__DIR__) . '/../config/childrenofthecity.txt', $posicoes);
+    $senha = extrairSenha(dirname(__DIR__) . '/config/childrenofthecity.txt', $posicoes);
     $chave = hash_pbkdf2('sha256', $senha, $salt, 200000, 32, true);
 
     $db_host            = env_val($env['DB_HOST']);
