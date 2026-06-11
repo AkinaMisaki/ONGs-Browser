@@ -15,22 +15,79 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     exit;
 }
 
-$captchaToken = $_POST['g-recaptcha-response'] ?? '';
-if (empty($captchaToken)) {
-    echo json_encode(["sucesso" => false, "mensagem" => "Por favor, confirme que você não é um robô."]);
+// ─── Etapa 1: Ler payload JSON ────────────────────────────────────────────────
+$payload = json_decode(file_get_contents('php://input'), true);
+if (!$payload) {
+    echo json_encode(["sucesso" => false, "mensagem" => "Payload inválido ou vazio."]);
     exit;
 }
-$respostaGoogle = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret={$CAPTCHA_SECRETA}&response={$captchaToken}");
+
+foreach (['msg_cifrada', 'keyAESCifrada', 'iv', 'captchaToken'] as $campo) {
+    if (empty($payload[$campo])) {
+        echo json_encode(["sucesso" => false, "mensagem" => "Campo obrigatório ausente: $campo"]);
+        exit;
+    }
+}
+
+// ─── Etapa 2: Verificar reCAPTCHA ────────────────────────────────────────────
+$captchaToken    = $payload['captchaToken'];
+$respostaGoogle  = file_get_contents(
+    "https://www.google.com/recaptcha/api/siteverify?secret={$CAPTCHA_SECRETA}&response={$captchaToken}"
+);
 $resultadoCaptcha = json_decode($respostaGoogle, true);
-if (!$resultadoCaptcha['success']) {
+if (!$resultadoCaptcha || !$resultadoCaptcha['success']) {
     echo json_encode(["sucesso" => false, "mensagem" => "Falha na verificação do reCAPTCHA. Tente novamente."]);
     exit;
 }
 
-$rawNome    = (isset($_POST['nome'])    && is_string($_POST['nome']))    ? trim($_POST['nome'])    : '';
-$rawEmail   = (isset($_POST['email'])   && is_string($_POST['email']))   ? trim($_POST['email'])   : '';
-$rawUsuario = (isset($_POST['usuario']) && is_string($_POST['usuario'])) ? trim($_POST['usuario']) : '';
-$rawSenha   = (isset($_POST['senha'])   && is_string($_POST['senha']))   ? trim($_POST['senha'])   : '';
+// ─── Etapa 3: Descriptografar payload híbrido (RSA + AES-GCM) ────────────────
+$msgCifrada = base64_decode($payload['msg_cifrada'],   true);
+$keyCifrada = base64_decode($payload['keyAESCifrada'], true);
+$iv         = base64_decode($payload['iv'],            true);
+
+if ($msgCifrada === false || $keyCifrada === false || $iv === false) {
+    echo json_encode(["sucesso" => false, "mensagem" => "Erro ao decodificar base64."]);
+    exit;
+}
+
+$pvkeyPath = '/var/www/config/private.pem';
+if (!file_exists($pvkeyPath)) {
+    echo json_encode(["sucesso" => false, "mensagem" => "Chave privada não encontrada."]);
+    exit;
+}
+
+$pvkey = openssl_pkey_get_private(file_get_contents($pvkeyPath));
+if (!$pvkey) {
+    echo json_encode(["sucesso" => false, "mensagem" => "Falha ao carregar chave privada RSA."]);
+    exit;
+}
+
+$chaveAES = '';
+if (!openssl_private_decrypt($keyCifrada, $chaveAES, $pvkey, OPENSSL_PKCS1_OAEP_PADDING)) {
+    echo json_encode(["sucesso" => false, "mensagem" => "Falha ao decifrar chave AES com RSA."]);
+    exit;
+}
+
+$tag    = substr($msgCifrada, -16);
+$cipher = substr($msgCifrada,  0, -16);
+$json   = openssl_decrypt($cipher, 'aes-256-gcm', $chaveAES, OPENSSL_RAW_DATA, $iv, $tag);
+
+if ($json === false) {
+    echo json_encode(["sucesso" => false, "mensagem" => "Falha ao decifrar mensagem com AES-GCM."]);
+    exit;
+}
+
+$form = json_decode($json, true);
+if (!$form || !isset($form['campoNome'], $form['campoEmail'], $form['campoUsuario'], $form['campoSenha'])) {
+    echo json_encode(["sucesso" => false, "mensagem" => "Dados do formulário mal formatados após decifração."]);
+    exit;
+}
+
+// ─── Etapa 4: Sanitizar e validar ────────────────────────────────────────────
+$rawNome    = trim($form['campoNome']);
+$rawEmail   = trim($form['campoEmail']);
+$rawUsuario = trim($form['campoUsuario']);
+$rawSenha   = $form['campoSenha'];
 
 if (empty($rawNome) || empty($rawEmail) || empty($rawUsuario) || empty($rawSenha)) {
     echo json_encode(["sucesso" => false, "mensagem" => "Dados inválidos. Preencha todos os campos corretamente."]);
@@ -51,20 +108,21 @@ if (!preg_match($padraoSenha, $rawSenha)) {
 $options = ['memory_cost' => 65536, 'time_cost' => 4, 'threads' => 2];
 $senhaCriptografada = password_hash($rawSenha, PASSWORD_ARGON2ID, $options);
 
-// Conta inicia inativa — ativação via e-mail (LGPD: consentimento explícito, Art. 7, I)
-$statusConta       = 0;
-$activationToken   = bin2hex(random_bytes(32));
-$activationExpire  = date("Y-m-d H:i:s", strtotime("+24 hours"));
+$statusConta      = 0;
+$activationToken  = bin2hex(random_bytes(32));
+$activationExpire = date("Y-m-d H:i:s", strtotime("+24 hours"));
 
+// ─── Etapa 5: Verificar unicidade (comparação antes da cifragem) ──────────────
+// Nota: email_hash (HMAC-SHA256) é usado como blind index para pesquisa eficiente.
+$emailHash = hash_hmac('sha256', strtolower($rawEmail), 'ongs-browser-email-index');
 
-// Unicidade 
-$stmt = $conn->prepare("SELECT email, usuario_login FROM usuario WHERE email = ? OR usuario_login = ? LIMIT 1");
-$stmt->bind_param("ss", $rawEmail, $rawUsuario);
+$stmt = $conn->prepare("SELECT email_hash, usuario_login FROM usuario WHERE email_hash = ? OR usuario_login = ? LIMIT 1");
+$stmt->bind_param("ss", $emailHash, $rawUsuario);
 $stmt->execute();
-$stmt->bind_result($emailEncontrado, $loginEncontrado);
+$stmt->bind_result($hashEncontrado, $loginEncontrado);
 
 if ($stmt->fetch()) {
-    $emailEmUso = $emailEncontrado === $rawEmail;
+    $emailEmUso = $hashEncontrado === $emailHash;
     $loginEmUso = $loginEncontrado === $rawUsuario;
 
     if ($emailEmUso && $loginEmUso) {
@@ -81,19 +139,28 @@ if ($stmt->fetch()) {
     exit;
 }
 $stmt->close();
-// ---------------------------------------------
 
+// ─── Etapa 6: Cifrar dados sensíveis com chave AES-256 do BD (S.3.2.c) ───────
+if ($DB_ENCRYPT_KEY === null) {
+    echo json_encode(["sucesso" => false, "mensagem" => "Chave de criptografia do BD não configurada. Execute generate_db_key.php."]);
+    exit;
+}
+
+$nomeCifrado  = aes_encrypt($rawNome,  $DB_ENCRYPT_KEY);
+$emailCifrado = aes_encrypt($rawEmail, $DB_ENCRYPT_KEY);
+
+// ─── Etapa 7: Persistir no BD ────────────────────────────────────────────────
 try {
-    $sql = "INSERT INTO usuario (nome_usuario, email, usuario_login, usuario_password)
-            VALUES (?, ?, ?, ?)";
+    $sql  = "INSERT INTO usuario (nome_usuario, email, email_hash, usuario_login, usuario_password)
+             VALUES (?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ssss", $rawNome, $rawEmail, $rawUsuario, $senhaCriptografada);
+    $stmt->bind_param("sssss", $nomeCifrado, $emailCifrado, $emailHash, $rawUsuario, $senhaCriptografada);
     $stmt->execute();
     $novoId = $conn->insert_id;
     $stmt->close();
 
-    $sql = "INSERT INTO usuario_verificacao (fk_usuario, statusConta, reset_token, reset_expire)
-            VALUES (?, ?, ?, ?)";
+    $sql  = "INSERT INTO usuario_verificacao (fk_usuario, statusConta, reset_token, reset_expire)
+             VALUES (?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("iiss", $novoId, $statusConta, $activationToken, $activationExpire);
     $stmt->execute();
@@ -110,6 +177,7 @@ try {
 
 $conn->close();
 
+// ─── Etapa 8: Enviar e-mail de ativação ──────────────────────────────────────
 $scheme         = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
 $_proj          = rtrim(str_replace('\\', '/', str_replace(realpath($_SERVER['DOCUMENT_ROOT']), '', realpath(__DIR__ . '/..'))), '/');
 $activationLink = $scheme . '://' . $_SERVER['HTTP_HOST'] . $_proj . '/view/ativar_conta.php?token=' . urlencode($activationToken);
@@ -133,18 +201,13 @@ try {
     $mail->Body = "
     <div style='font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto;
                  border: 1px solid #ddd; border-radius: 8px; overflow: hidden;'>
-
-        <!-- Cabeçalho -->
         <div style='background-color: #0056b3; padding: 20px 30px;'>
             <h1 style='color: #fff; margin: 0; font-size: 1.4rem;'>ONGs Browser</h1>
         </div>
-
-        <!-- Corpo -->
         <div style='padding: 30px;'>
             <h2 style='color: #0056b3;'>Bem-vindo(a), {$nomeSeguro}!</h2>
             <p>Obrigado por criar sua conta no <strong>ONGs Browser</strong>. Para ativá-la,
                clique no botão abaixo. O link é válido por <strong>24 horas</strong>.</p>
-
             <div style='text-align: center; margin: 30px 0;'>
                 <a href='{$activationLink}'
                    style='background-color: #28a745; color: #fff; padding: 14px 28px;
@@ -153,38 +216,22 @@ try {
                     Ativar Minha Conta
                 </a>
             </div>
-
             <p style='font-size: 0.9rem; color: #555;'>
                 Se o botão não funcionar, copie e cole este endereço no seu navegador:<br>
                 <a href='{$activationLink}' style='color: #0056b3; word-break: break-all;'>{$activationLink}</a>
             </p>
-
             <p style='font-size: 0.9rem; color: #555;'>
-                Se você não realizou este cadastro, ignore este e-mail. Nenhuma ação é necessária
-                e seus dados não serão mantidos após a expiração do link.
+                Se você não realizou este cadastro, ignore este e-mail.
             </p>
         </div>
-
-        <!-- Aviso LGPD -->
         <div style='background-color: #f4f7fc; border-top: 1px solid #ddd;
                     padding: 20px 30px; font-size: 0.8rem; color: #666; line-height: 1.6;'>
             <strong>Informações sobre Privacidade e Proteção de Dados (LGPD — Lei nº 13.709/2018)</strong><br><br>
-
             <strong>Controlador dos dados:</strong> ONGs Browser (projeto acadêmico).<br>
-            <strong>Dados coletados:</strong> nome, endereço de e-mail e nome de usuário, fornecidos
-            voluntariamente no momento do cadastro.<br>
+            <strong>Dados coletados:</strong> nome, endereço de e-mail e nome de usuário.<br>
             <strong>Finalidade:</strong> criação e gestão da sua conta de acesso à plataforma.<br>
             <strong>Base legal:</strong> consentimento do titular (Art. 7º, I, LGPD).<br>
-            <strong>Retenção:</strong> seus dados são mantidos enquanto a conta estiver ativa.
-            Contas não ativadas em 24 horas são descartadas.<br><br>
-
-            <strong>Seus direitos como titular (Art. 18, LGPD):</strong><br>
-            Você pode, a qualquer momento: confirmar a existência de tratamento; acessar, corrigir
-            ou excluir seus dados; solicitar portabilidade; revogar o consentimento; ou opor-se
-            ao tratamento. Para exercer esses direitos, acesse a seção
-            <em>Gerenciar Conta</em> após o login ou entre em contato pelo e-mail
-            <a href='mailto:noreply@hanafuda.moe' style='color: #0056b3;'>noreply@hanafuda.moe</a>.<br><br>
-
+            <strong>Retenção:</strong> seus dados são mantidos enquanto a conta estiver ativa.<br><br>
             Este é um e-mail automático. Por favor, não responda diretamente a esta mensagem.
         </div>
     </div>";
@@ -193,11 +240,7 @@ try {
         . "Acesse o link abaixo para ativar sua conta (válido por 24 horas):\n"
         . "{$activationLink}\n\n"
         . "Se não realizou este cadastro, ignore este e-mail.\n\n"
-        . "--- Aviso LGPD ---\n"
-        . "Controlador: ONGs Browser. Dados coletados: nome, e-mail e usuário.\n"
-        . "Finalidade: criação de conta. Base legal: consentimento (Art. 7, I, LGPD).\n"
-        . "Direitos (Art. 18): acesso, correção, exclusão e portabilidade via Gerenciar Conta.\n"
-        . "Contato: noreply@hanafuda.moe";
+        . "Controlador: ONGs Browser. Contato: noreply@hanafuda.moe";
 
     $mail->send();
 

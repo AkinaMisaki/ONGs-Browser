@@ -67,6 +67,9 @@ if ($hasEnv) {
     $CAPTCHA_SECRETA    = base64_decode(aes_decrypt($env['RECAPTCHA_SECRET'],  $chave));
     $TELEGRAM_BOT_TOKEN = base64_decode(aes_decrypt($env['TELEGRAM_BOT_TOKEN'], $chave));
     $TEST_ENV           = aes_decrypt($env['TEST_ENV'], $chave);
+    $DB_ENCRYPT_KEY     = isset($env['DB_ENCRYPT_KEY'])
+                          ? base64_decode(aes_decrypt($env['DB_ENCRYPT_KEY'], $chave))
+                          : null;
 } else {
     // Default XAMPP settings (no .env present)
     $db_host            = 'localhost';
@@ -79,6 +82,7 @@ if ($hasEnv) {
     $CAPTCHA_SECRETA    = '';
     $TELEGRAM_BOT_TOKEN = '';
     $TEST_ENV           = '';
+    $DB_ENCRYPT_KEY     = null;
 }
 
 $conn = new mysqli($db_host, $db_user, $db_pass, $db_name, $db_port);
