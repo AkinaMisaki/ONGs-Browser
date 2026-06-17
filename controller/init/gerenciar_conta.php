@@ -15,6 +15,9 @@ if ($result->num_rows !== 1) {
 $usuario = $result->fetch_assoc();
 $stmt->close();
 
+$usuario['nome_usuario'] = db_decrypt($usuario['nome_usuario'], $DB_ENCRYPT_KEY);
+$usuario['email']        = db_decrypt($usuario['email'],        $DB_ENCRYPT_KEY);
+
 $stmtProp = $conn->prepare("SELECT id_prop FROM proprietario_ong WHERE fk_usuario = ? LIMIT 1");
 $stmtProp->bind_param("i", $_SESSION['usuario_id']);
 $stmtProp->execute();

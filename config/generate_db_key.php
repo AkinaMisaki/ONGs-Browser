@@ -43,7 +43,6 @@ $dbKeyCifrada = aes_encrypt(base64_encode($dbKey), $chave);
 
 echo "Chave protegida : " . $dbKeyCifrada . "\n\n";
 
-$envPath  = dirname(__DIR__) . '/config/.env';
 $conteudo = file_get_contents($envPath);
 $conteudo = preg_replace('/^DB_ENCRYPT_KEY=.*\n?/m', '', $conteudo);
 $conteudo = rtrim($conteudo) . "\nDB_ENCRYPT_KEY=" . $dbKeyCifrada . "\n";

@@ -47,8 +47,9 @@ if ($acao === 'alterar_nome') {
         exit;
     }
 
+    $nomeCifrado = ($DB_ENCRYPT_KEY !== null) ? aes_encrypt($novo_nome, $DB_ENCRYPT_KEY) : $novo_nome;
     $stmt = $conn->prepare("UPDATE usuario SET nome_usuario = ? WHERE id_usuario = ?");
-    $stmt->bind_param("si", $novo_nome, $id_usuario);
+    $stmt->bind_param("si", $nomeCifrado, $id_usuario);
     $stmt->execute();
     $stmt->close();
     $conn->close();
@@ -126,8 +127,8 @@ if ($acao === 'exportar_dados') {
         'aviso_lgpd'      => 'Dados exportados em conformidade com a LGPD (Lei nº 13.709/2018), Art. 18.',
         'data_exportacao' => date('Y-m-d H:i:s'),
         'dados_pessoais'  => [
-            'nome'          => $dados['nome_usuario'],
-            'email'         => $dados['email'],
+            'nome'          => db_decrypt($dados['nome_usuario'], $DB_ENCRYPT_KEY),
+            'email'         => db_decrypt($dados['email'], $DB_ENCRYPT_KEY),
             'cpf'           => isset($dados['cpf']) ? $dados['cpf'] : '',
             'rg'            => isset($dados['rg']) ? $dados['rg'] : '',
             'telefone'      => isset($dados['telefone']) ? $dados['telefone'] : '',
@@ -194,7 +195,7 @@ if ($acao === 'gerar_qr_2fa') {
     // Armazena temporariamente na sessão até confirmação
     $_SESSION['2fa_setup_secret'] = $secret;
 
-    $qrCodeUrl = $google2fa->getQRCodeUrl('ONGs Browser', $usuario['email'], $secret);
+    $qrCodeUrl = $google2fa->getQRCodeUrl('ONGs Browser', db_decrypt($usuario['email'], $DB_ENCRYPT_KEY), $secret);
 
     // Gera SVG do QR code
     $renderer = new ImageRenderer(new RendererStyle(220), new SvgImageBackEnd());

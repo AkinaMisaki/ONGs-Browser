@@ -153,7 +153,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $otp .= $chars[random_int(0, strlen($chars) - 1)];
                 }
 
-                if (sendTelegramOtp($TELEGRAM_BOT_TOKEN, $adminUser['telegram_id'], $otp, $adminUser['nome_usuario'] ?? '')) {
+                if (sendTelegramOtp($TELEGRAM_BOT_TOKEN, $adminUser['telegram_id'], $otp, db_decrypt($adminUser['nome_usuario'] ?? '', $DB_ENCRYPT_KEY))) {
                     $_SESSION['admin_otp'] = [
                         'user_id'  => $adminUser['id_usuario'],
                         'login'    => $adminUser['usuario_login'],

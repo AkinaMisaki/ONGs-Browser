@@ -13,4 +13,9 @@ if (!empty($_SESSION['usuario_id'])) {
     $stmt->execute();
     $proprietario = $stmt->get_result()->fetch_assoc();
     $stmt->close();
+
+    if ($proprietario) {
+        $proprietario['nome_usuario'] = db_decrypt($proprietario['nome_usuario'], $DB_ENCRYPT_KEY);
+        $proprietario['email']        = db_decrypt($proprietario['email'],        $DB_ENCRYPT_KEY);
+    }
 }

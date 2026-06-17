@@ -79,7 +79,7 @@ if ($action === 'request') {
             $otp .= $chars[random_int(0, strlen($chars) - 1)];
         }
 
-        if (sendTelegramOtp($TELEGRAM_BOT_TOKEN, $user['telegram_id'], $otp, $user['nome_usuario'] ?? '')) {
+        if (sendTelegramOtp($TELEGRAM_BOT_TOKEN, $user['telegram_id'], $otp, db_decrypt($user['nome_usuario'] ?? '', $DB_ENCRYPT_KEY))) {
             $_SESSION['user_otp'] = [
                 'user_id'     => $user['id_usuario'],
                 'login'       => $user['usuario_login'],

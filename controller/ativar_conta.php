@@ -62,7 +62,7 @@ if (strtotime($usuario['reset_expire']) < time()) {
     $conn->close();
 
     $activationLink = "https://hanafuda.moe/view/ativar_conta.php?token=" . urlencode($novoToken);
-    $nomeSeguro     = htmlspecialchars($dadosUsuario['nome_usuario'], ENT_QUOTES, 'UTF-8');
+    $nomeSeguro     = htmlspecialchars(db_decrypt($dadosUsuario['nome_usuario'], $DB_ENCRYPT_KEY), ENT_QUOTES, 'UTF-8');
 
     $mail = new PHPMailer(true);
     try {
@@ -76,7 +76,7 @@ if (strtotime($usuario['reset_expire']) < time()) {
         $mail->Username   = 'noreply@hanafuda.moe';
         $mail->Password   = $SMTP_PASSWORD;
         $mail->setFrom('noreply@hanafuda.moe', 'ONGs Browser');
-        $mail->addAddress($dadosUsuario['email'], $nomeSeguro);
+        $mail->addAddress(db_decrypt($dadosUsuario['email'], $DB_ENCRYPT_KEY), $nomeSeguro);
         $mail->isHTML(true);
         $mail->Subject = 'Novo link de ativação — ONGs Browser';
         $mail->Body    = "

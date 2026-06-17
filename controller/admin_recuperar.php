@@ -62,7 +62,7 @@ if ($action === 'check_telegram') {
         $otp .= $chars[random_int(0, strlen($chars) - 1)];
     }
 
-    if (!enviarOtpTelegram($TELEGRAM_BOT_TOKEN, $row['telegram_id'], $otp, $row['nome_usuario'] ?? '')) {
+    if (!enviarOtpTelegram($TELEGRAM_BOT_TOKEN, $row['telegram_id'], $otp, db_decrypt($row['nome_usuario'] ?? '', $DB_ENCRYPT_KEY))) {
         echo json_encode(['sucesso' => false, 'mensagem' => 'Falha ao enviar código pelo Telegram. Tente novamente.']);
         exit;
     }
@@ -131,7 +131,7 @@ if ($action === 'generate_qr') {
     $secret    = $google2fa->generateSecretKey();
     $_SESSION['admin_recovery_2fa_secret'] = $secret;
 
-    $qrUrl = $google2fa->getQRCodeUrl('ONGs Browser', $user['email'], $secret);
+    $qrUrl = $google2fa->getQRCodeUrl('ONGs Browser', db_decrypt($user['email'], $DB_ENCRYPT_KEY), $secret);
 
     $renderer = new ImageRenderer(new RendererStyle(220), new SvgImageBackEnd());
     $writer   = new Writer($renderer);

@@ -31,7 +31,7 @@ if ($linha = $resultado->fetch_assoc()) {
         'nome_ong'        => $linha['nome_ong'],
         'descricao'       => $linha['descricao'],
         'caminho_arquivo' => $linha['caminho_arquivo'],
-        'proprietario'    => $linha['nome_usuario'],
+        'proprietario'    => db_decrypt($linha['nome_usuario'], $DB_ENCRYPT_KEY),
     ]);
 } else {
     echo json_encode(['sucesso' => false, 'mensagem' => 'ONG não encontrada.']);

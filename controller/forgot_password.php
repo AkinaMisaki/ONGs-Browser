@@ -18,9 +18,10 @@ if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
     exit;
 }
 
-// Checa se o email esta no BD
-$stmt = $conn->prepare("SELECT id_usuario FROM usuario WHERE email = ?");
-$stmt->bind_param("s", $email);
+// Checa se o email esta no BD via blind index (email_hash)
+$emailHash = hash_hmac('sha256', strtolower($email), 'ongs-browser-email-index');
+$stmt = $conn->prepare("SELECT id_usuario FROM usuario WHERE email_hash = ?");
+$stmt->bind_param("s", $emailHash);
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -30,8 +31,8 @@ if ($result->num_rows === 1) {
     $token  = bin2hex(random_bytes(32));
     $expire = date("Y-m-d H:i:s", strtotime("+1 hour"));
 
-    $stmt = $conn->prepare("UPDATE usuario_verificacao uv INNER JOIN usuario u ON u.id_usuario = uv.fk_usuario SET uv.reset_token=?, uv.reset_expire=? WHERE u.email=?");
-    $stmt->bind_param("sss", $token, $expire, $email);
+    $stmt = $conn->prepare("UPDATE usuario_verificacao uv INNER JOIN usuario u ON u.id_usuario = uv.fk_usuario SET uv.reset_token=?, uv.reset_expire=? WHERE u.email_hash=?");
+    $stmt->bind_param("sss", $token, $expire, $emailHash);
     $stmt->execute();
 
     $scheme       = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';

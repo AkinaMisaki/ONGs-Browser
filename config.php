@@ -23,10 +23,17 @@ function aes_encrypt(string $valor, string $chave): string {
 }
 
 function aes_decrypt(string $encoded, string $chave): string {
-    $data   = base64_decode($encoded);
-    $iv     = substr($data, 0, 16);
+    $data    = base64_decode($encoded);
+    $iv      = substr($data, 0, 16);
     $cifrado = substr($data, 16);
     return openssl_decrypt($cifrado, 'aes-256-cbc', $chave, OPENSSL_RAW_DATA, $iv);
+}
+
+function db_decrypt(?string $valor, ?string $chave): string {
+    if ($valor === null || $valor === '') return '';
+    if ($chave === null) return $valor;
+    $result = aes_decrypt($valor, $chave);
+    return ($result === false || $result === '') ? $valor : $result;
 }
 
 // Posições só existem no código-fonte — não ficam no .env
@@ -58,13 +65,13 @@ if ($hasEnv) {
     $chave = hash_pbkdf2('sha256', $senha, $salt, 200000, 32, true);
 
     $db_host            = env_val($env['DB_HOST']);
-    $db_user            = base64_decode(aes_decrypt($env['DB_USER'],           $chave));
-    $db_name            = base64_decode(aes_decrypt($env['DB_NAME'],           $chave));
+    $db_user            = base64_decode(aes_decrypt($env['DB_USER'],            $chave));
+    $db_name            = base64_decode(aes_decrypt($env['DB_NAME'],            $chave));
     $db_port            = (int) $env['DB_PORT'];
-    $db_pass            = base64_decode(aes_decrypt($env['DB_PASS'],           $chave));
-    $SMTP_PASSWORD      = base64_decode(aes_decrypt($env['SMTP_PASSWORD'],     $chave));
+    $db_pass            = base64_decode(aes_decrypt($env['DB_PASS'],            $chave));
+    $SMTP_PASSWORD      = base64_decode(aes_decrypt($env['SMTP_PASSWORD'],      $chave));
     $CAPTCHA_SITE       = env_val($env['RECAPTCHA_SITE']);
-    $CAPTCHA_SECRETA    = base64_decode(aes_decrypt($env['RECAPTCHA_SECRET'],  $chave));
+    $CAPTCHA_SECRETA    = base64_decode(aes_decrypt($env['RECAPTCHA_SECRET'],   $chave));
     $TELEGRAM_BOT_TOKEN = base64_decode(aes_decrypt($env['TELEGRAM_BOT_TOKEN'], $chave));
     $TEST_ENV           = aes_decrypt($env['TEST_ENV'], $chave);
     $DB_ENCRYPT_KEY     = isset($env['DB_ENCRYPT_KEY'])

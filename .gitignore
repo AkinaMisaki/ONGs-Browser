@@ -6,3 +6,7 @@ uploads/*
 !uploads/.gitkeep
 config.php
 config/encrypt_env.php
+vendor/
+composer.json
+composer.lock
+public.der
