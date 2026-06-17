@@ -30,13 +30,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
     if (!empty($rawcpf) && !empty($rawrg) && !empty($rawtelefone)) {
+        if ($DB_ENCRYPT_KEY === null) {
+            echo json_encode(["sucesso" => false, "mensagem" => "Chave de criptografia do BD não configurada. Execute generate_db_key.php."]);
+            exit();
+        }
         try {
             if (isset($_SESSION['usuario_id'])) {
-                $idUsuario = $_SESSION['usuario_id']; 
-                
+                $idUsuario = $_SESSION['usuario_id'];
+
+                $cpfCifrado      = aes_encrypt($rawcpf,      $DB_ENCRYPT_KEY);
+                $rgCifrado       = aes_encrypt($rawrg,       $DB_ENCRYPT_KEY);
+                $telefoneCifrado = aes_encrypt($rawtelefone, $DB_ENCRYPT_KEY);
+
                 $sql = "INSERT INTO proprietario_ong (cpf, rg, telefone, fk_usuario) VALUES (?, ?, ?, ?)";
                 $stmt = $conn->prepare($sql);
-                $stmt->bind_param("sssi", $rawcpf, $rawrg, $rawtelefone, $idUsuario);
+                $stmt->bind_param("sssi", $cpfCifrado, $rgCifrado, $telefoneCifrado, $idUsuario);
                 
                 if ($stmt->execute()) {
                     $_SESSION['statusConta'] = 2; 

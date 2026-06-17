@@ -17,7 +17,10 @@ $usuarioSO = trim(shell_exec('whoami') ?: get_current_user());
 $hostname  = gethostname();
 
 $result = $conn->query(
-    "SELECT id_usuario, nome_usuario, usuario_login, email FROM usuario ORDER BY id_usuario"
+    "SELECT u.id_usuario, u.nome_usuario, u.usuario_login, u.email, p.cpf, p.rg, p.telefone
+     FROM usuario u
+     LEFT JOIN proprietario_ong p ON p.fk_usuario = u.id_usuario
+     ORDER BY u.id_usuario"
 );
 
 if (!$result) {
@@ -39,13 +42,20 @@ if ($result->num_rows === 0) {
 while ($row = $result->fetch_assoc()) {
     $nomeDecifrado  = aes_decrypt($row['nome_usuario'], $DB_ENCRYPT_KEY);
     $emailDecifrado = aes_decrypt($row['email'],        $DB_ENCRYPT_KEY);
+    $cpfDecifrado      = $row['cpf']      !== null ? db_decrypt($row['cpf'],      $DB_ENCRYPT_KEY) : null;
+    $rgDecifrado       = $row['rg']       !== null ? db_decrypt($row['rg'],       $DB_ENCRYPT_KEY) : null;
+    $telefoneDecifrado = $row['telefone'] !== null ? db_decrypt($row['telefone'], $DB_ENCRYPT_KEY) : null;
 
     // S.3.2.d: usuario:hostname>informações do cadastro
     echo "{$usuarioSO}:{$hostname}> ";
     echo "id={$row['id_usuario']} | ";
     echo "nome={$nomeDecifrado} | ";
     echo "login={$row['usuario_login']} | ";
-    echo "email={$emailDecifrado}\n";
+    echo "email={$emailDecifrado}";
+    if ($cpfDecifrado !== null) {
+        echo " | cpf={$cpfDecifrado} | rg={$rgDecifrado} | telefone={$telefoneDecifrado}";
+    }
+    echo "\n";
 }
 
 echo "\nTotal: {$result->num_rows} registro(s) descriptografado(s).\n";

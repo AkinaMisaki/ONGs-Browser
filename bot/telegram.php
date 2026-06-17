@@ -29,9 +29,11 @@ try {
     }
 
     if (strpos($texto, '/verificar') === 0) {
+        $chatIdHash = hash_hmac('sha256', (string) $chat_id, 'ongs-browser-telegram-index');
+
         // Vê se essa conta do Telegram já está vinculada a algum usuário do site
-        $stmtChk = $conn->prepare("SELECT u.nome_usuario FROM usuario_verificacao uv JOIN usuario u ON u.id_usuario = uv.fk_usuario WHERE uv.telegram_id = ?");
-        $stmtChk->bind_param("s", $chat_id);
+        $stmtChk = $conn->prepare("SELECT u.nome_usuario FROM usuario_verificacao uv JOIN usuario u ON u.id_usuario = uv.fk_usuario WHERE uv.telegram_id_hash = ?");
+        $stmtChk->bind_param("s", $chatIdHash);
         $stmtChk->execute();
         $rowChk = $stmtChk->get_result()->fetch_assoc();
         if ($rowChk) {
@@ -60,8 +62,9 @@ try {
             if ($usuario['telegram_id'] != null) {
                 reply($chat_id, "Você já conectou esta conta do Telegram com uma conta do site.");
             } else {
-                $stmt2 = $conn->prepare("UPDATE usuario_verificacao SET telegram_id = ?, telegram_pass = NULL WHERE telegram_pass = ?");
-                $stmt2->bind_param("ss", $chat_id, $t[1]);
+                $chatIdCifrado = aes_encrypt((string) $chat_id, $DB_ENCRYPT_KEY);
+                $stmt2 = $conn->prepare("UPDATE usuario_verificacao SET telegram_id = ?, telegram_id_hash = ?, telegram_pass = NULL WHERE telegram_pass = ?");
+                $stmt2->bind_param("sss", $chatIdCifrado, $chatIdHash, $t[1]);
                 $stmt2->execute();
                 reply($chat_id, "Conectado com a conta " . $usuario['nome_usuario'] . " com sucesso!");
             }

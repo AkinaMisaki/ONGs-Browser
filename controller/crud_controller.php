@@ -323,7 +323,7 @@ function deleteRecord() {
 // ── Broadcast via Telegram ─────────────────────────────────────────────────
 // Envia uma mensagem para todos os usuários com telegram_id cadastrado.
 function broadcastSend() {
-    global $conn, $env, $TELEGRAM_BOT_TOKEN;
+    global $conn, $env, $TELEGRAM_BOT_TOKEN, $DB_ENCRYPT_KEY;
 
     $message = trim($_POST['message'] ?? '');
     if ($message === '') {
@@ -346,7 +346,7 @@ function broadcastSend() {
 
     $chatIds = [];
     while ($row = $result->fetch_assoc()) {
-        $chatIds[] = $row['telegram_id'];
+        $chatIds[] = db_decrypt($row['telegram_id'], $DB_ENCRYPT_KEY);
     }
 
     if (empty($chatIds)) {

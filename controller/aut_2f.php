@@ -39,7 +39,7 @@ if (!$usuario || empty($usuario['codVerificador'])) {
 }
 
 $google2fa = new Google2FA();
-$valido = $google2fa->verifyKey($usuario['codVerificador'], $codigoEnviado);
+$valido = $google2fa->verifyKey(db_decrypt($usuario['codVerificador'], $DB_ENCRYPT_KEY), $codigoEnviado);
 
 if (!$valido) {
     echo json_encode(['sucesso' => false, 'mensagem' => 'Código incorreto. Tente novamente.']);

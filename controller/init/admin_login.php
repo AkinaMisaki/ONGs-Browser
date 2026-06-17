@@ -153,7 +153,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $otp .= $chars[random_int(0, strlen($chars) - 1)];
                 }
 
-                if (sendTelegramOtp($TELEGRAM_BOT_TOKEN, $adminUser['telegram_id'], $otp, db_decrypt($adminUser['nome_usuario'] ?? '', $DB_ENCRYPT_KEY))) {
+                if (sendTelegramOtp($TELEGRAM_BOT_TOKEN, db_decrypt($adminUser['telegram_id'], $DB_ENCRYPT_KEY), $otp, db_decrypt($adminUser['nome_usuario'] ?? '', $DB_ENCRYPT_KEY))) {
                     $_SESSION['admin_otp'] = [
                         'user_id'  => $adminUser['id_usuario'],
                         'login'    => $adminUser['usuario_login'],
@@ -243,7 +243,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $stmt->close();
 
                     $google2fa = new Google2FA();
-                    if ($uv && $google2fa->verifyKey($uv['codVerificador'], $codigo)) {
+                    if ($uv && $google2fa->verifyKey(db_decrypt($uv['codVerificador'], $DB_ENCRYPT_KEY), $codigo)) {
                         unset($_SESSION['admin_totp_pending']);
                         session_regenerate_id(true);
                         $_SESSION['admin_logged_in']     = true;
@@ -320,7 +320,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 if (password_verify($answer, $recovery['hash'])) {
                     // Limpa as credenciais imediatamente — do zero
-                    $stmt = $conn->prepare("UPDATE usuario_verificacao SET telegram_id = NULL, codVerificador = NULL, telegram_pass = NULL WHERE fk_usuario = ?");
+                    $stmt = $conn->prepare("UPDATE usuario_verificacao SET telegram_id = NULL, telegram_id_hash = NULL, codVerificador = NULL, telegram_pass = NULL WHERE fk_usuario = ?");
                     $stmt->bind_param("i", $recovery['user_id']);
                     $stmt->execute();
                     $stmt->close();

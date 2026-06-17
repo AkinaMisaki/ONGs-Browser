@@ -28,7 +28,7 @@ if (empty($row['telegram_id'])) {
     exit;
 }
 
-$chat_id   = $row['telegram_id'];
+$chat_id   = db_decrypt($row['telegram_id'], $DB_ENCRYPT_KEY);
 $bot_token = $TELEGRAM_BOT_TOKEN ?? '';
 
 if (empty($bot_token)) {

@@ -129,9 +129,9 @@ if ($acao === 'exportar_dados') {
         'dados_pessoais'  => [
             'nome'          => db_decrypt($dados['nome_usuario'], $DB_ENCRYPT_KEY),
             'email'         => db_decrypt($dados['email'], $DB_ENCRYPT_KEY),
-            'cpf'           => isset($dados['cpf']) ? $dados['cpf'] : '',
-            'rg'            => isset($dados['rg']) ? $dados['rg'] : '',
-            'telefone'      => isset($dados['telefone']) ? $dados['telefone'] : '',
+            'cpf'           => isset($dados['cpf']) ? db_decrypt($dados['cpf'], $DB_ENCRYPT_KEY) : '',
+            'rg'            => isset($dados['rg']) ? db_decrypt($dados['rg'], $DB_ENCRYPT_KEY) : '',
+            'telefone'      => isset($dados['telefone']) ? db_decrypt($dados['telefone'], $DB_ENCRYPT_KEY) : '',
         ],
     ];
 
@@ -237,8 +237,10 @@ if ($acao === 'ativar_2fa') {
     $secret = $_SESSION['2fa_setup_secret'];
     unset($_SESSION['2fa_setup_secret']);
 
+    $secretCifrado = aes_encrypt($secret, $DB_ENCRYPT_KEY);
+
     $stmt = $conn->prepare("UPDATE usuario_verificacao SET codVerificador = ? WHERE fk_usuario = ?");
-    $stmt->bind_param("si", $secret, $id_usuario);
+    $stmt->bind_param("si", $secretCifrado, $id_usuario);
     $stmt->execute();
     $stmt->close();
     $conn->close();
@@ -287,7 +289,7 @@ if ($acao === 'desativar_2fa') {
     }
 
     $google2fa = new Google2FA();
-    $valido    = $google2fa->verifyKey($usuario['codVerificador'], $codigoEnviado);
+    $valido    = $google2fa->verifyKey(db_decrypt($usuario['codVerificador'], $DB_ENCRYPT_KEY), $codigoEnviado);
 
     if (!$valido) {
         echo json_encode(['sucesso' => false, 'mensagem' => 'Código incorreto.']);
@@ -314,7 +316,7 @@ if ($acao === 'desconectar_telegram') {
         echo json_encode(['sucesso' => false, 'mensagem' => 'Administradores não podem desconectar o Telegram por aqui. Use a opção de recuperação no login.']);
         exit;
     }
-    $stmt = $conn->prepare("UPDATE usuario_verificacao SET telegram_id = NULL, telegram_pass = NULL WHERE fk_usuario = ?");
+    $stmt = $conn->prepare("UPDATE usuario_verificacao SET telegram_id = NULL, telegram_id_hash = NULL, telegram_pass = NULL WHERE fk_usuario = ?");
     $stmt->bind_param("i", $id_usuario);
     $stmt->execute();
     $stmt->close();
@@ -335,6 +337,11 @@ if ($acao === 'resgatar_dados_parciais') {
         $dados = $stmt->get_result()->fetch_assoc();
         $stmt->close();
         $conn->close();
+        if ($dados) {
+            $dados['cpf']      = db_decrypt($dados['cpf'], $DB_ENCRYPT_KEY);
+            $dados['rg']       = db_decrypt($dados['rg'], $DB_ENCRYPT_KEY);
+            $dados['telefone'] = db_decrypt($dados['telefone'], $DB_ENCRYPT_KEY);
+        }
         echo json_encode(['sucesso' => true, 'dados' => $dados ?? []]);
     } catch (Throwable $e) {
         error_log($e->getMessage());

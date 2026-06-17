@@ -62,7 +62,7 @@ if ($action === 'check_telegram') {
         $otp .= $chars[random_int(0, strlen($chars) - 1)];
     }
 
-    if (!enviarOtpTelegram($TELEGRAM_BOT_TOKEN, $row['telegram_id'], $otp, db_decrypt($row['nome_usuario'] ?? '', $DB_ENCRYPT_KEY))) {
+    if (!enviarOtpTelegram($TELEGRAM_BOT_TOKEN, db_decrypt($row['telegram_id'], $DB_ENCRYPT_KEY), $otp, db_decrypt($row['nome_usuario'] ?? '', $DB_ENCRYPT_KEY))) {
         echo json_encode(['sucesso' => false, 'mensagem' => 'Falha ao enviar código pelo Telegram. Tente novamente.']);
         exit;
     }
