@@ -18,7 +18,7 @@ const PERSONAL_QUESTIONS = [
 ];
 
 require_once __DIR__ . '/../../config.php';
-require       __DIR__ . '/../../../vendor/autoload.php';
+require       __DIR__ . '/../../vendor/autoload.php';
 use PragmaRX\Google2FA\Google2FA;
 
 function lockoutFile(string $ip): string {

@@ -3,7 +3,7 @@ ini_set('display_errors', '0');
 if (session_status() === PHP_SESSION_NONE) session_start();
 
 require_once __DIR__ . '/../config.php';
-require       __DIR__ . '/../../vendor/autoload.php';
+require       __DIR__ . '/../vendor/autoload.php';
 
 use PragmaRX\Google2FA\Google2FA;
 use BaconQrCode\Renderer\ImageRenderer;

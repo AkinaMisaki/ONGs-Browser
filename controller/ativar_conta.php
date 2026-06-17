@@ -1,6 +1,6 @@
 <?php
 header('Content-Type: application/json; charset=utf-8');
-require __DIR__ . '/../../vendor/autoload.php';
+require __DIR__ . '/../vendor/autoload.php';
 include __DIR__ . '/../config.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
