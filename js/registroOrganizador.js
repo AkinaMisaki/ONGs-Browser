@@ -1,3 +1,7 @@
+function toBase64(buffer) {
+    return btoa(String.fromCharCode(...new Uint8Array(buffer)));
+}
+
 async function realizarCadastro(event) {
     event.preventDefault();
     const campoCpf = document.getElementById('cpf').value.trim();
@@ -5,7 +9,7 @@ async function realizarCadastro(event) {
     const campoTelefone = document.getElementById('telefone').value.trim();
 
     if (campoCpf === '' || campoRg === '' || campoTelefone === '') {
-        alert('Atenção: Todos os campos são obrigatórios!');
+        mostrarMensagem('Atenção: Todos os campos são obrigatórios!', 'erro');
         return;
     }
 
@@ -26,17 +30,37 @@ async function realizarCadastro(event) {
         return;
     }
 
-    const dadosFormulario = new FormData();
-    dadosFormulario.append('cpf', campoCpf);
-    dadosFormulario.append('rg', campoRg);
-    dadosFormulario.append('telefone', campoTelefone);
-
     try {
+
+        const derkey = await fetch('../public.der');
+        const derbuffer = await derkey.arrayBuffer();
+        const pubkey = await crypto.subtle.importKey('spki', derbuffer, { name: 'RSA-OAEP', hash: 'SHA-1' }, false, ['encrypt']);
+        
+
+        const dadosOriginais = JSON.stringify({ cpf: campoCpf, rg: campoRg, telefone: campoTelefone });
+        
+
+        const chaveAES = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const dadosCifrados = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, chaveAES, new TextEncoder().encode(dadosOriginais));
+        
+
+        const chaveAESRaw = await crypto.subtle.exportKey('raw', chaveAES);
+        const chaveAESCifrada = await crypto.subtle.encrypt({ name: 'RSA-OAEP' }, pubkey, chaveAESRaw);
+
+
+        const dadosFormulario = new FormData();
+        dadosFormulario.append('keyAESCifrada', toBase64(chaveAESCifrada));
+        dadosFormulario.append('msg_cifrada', toBase64(dadosCifrados));
+        dadosFormulario.append('iv', toBase64(iv));
+
         const resposta = await fetch('../controller/registroOrganizador.php', {
             method: 'POST',
             body: dadosFormulario
         });
+        
         const resultado = await resposta.json();
+        
         if (resultado.sucesso) {
             window.location.href = 'gerenciar_conta.php';
         } else {
@@ -44,6 +68,7 @@ async function realizarCadastro(event) {
         }
     } catch (erro) {
         mostrarMensagem('Erro crítico: Falha de comunicação com o servidor.', 'erro');
+        console.error("Detalhes do erro:", erro);
     }
 }
 
@@ -51,4 +76,5 @@ function mostrarMensagem(texto, tipo) {
     const el = document.getElementById('mensagem-global');
     el.textContent = texto;
     el.className = 'mensagem-global ' + tipo;
+    el.classList.remove('hidden');
 }

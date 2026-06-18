@@ -2,6 +2,7 @@ const dropZone = document.getElementById('drop-zone');
 const fileInput = document.getElementById('imagemOng');
 const form = document.getElementById('formContato');
 
+
 if (dropZone && fileInput) {
     dropZone.onclick = () => fileInput.click();
 
@@ -47,6 +48,19 @@ function validarEAtribuirArquivo(arquivo) {
     dropZone.querySelector('span').innerText = `Arquivo: ${arquivo.name}`;
 }
 
+function toBase64(buffer) {
+    return btoa(String.fromCharCode(...new Uint8Array(buffer)));
+}
+
+function converterParaBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+    });
+}
+
 if (form) {
     form.addEventListener('submit', async (e) => {
         e.preventDefault(); 
@@ -54,28 +68,46 @@ if (form) {
     });
 }
 
+
 async function realizarCadastroUsuario() {
     const campoOng = document.getElementById('nomeOng').value.trim();
     const campoDescricao = document.getElementById('descricaoOng').value.trim();
+    
+    if (!fileInput.files || fileInput.files.length === 0) {
+        alert('Por favor, selecione uma imagem.');
+        return;
+    }
     const arquivoImagem = fileInput.files[0];
 
-    if (!campoOng || !campoDescricao || !arquivoImagem) {
-        alert('Por favor, preencha todos os campos e selecione uma imagem.');
+    if (!campoOng || !campoDescricao) {
+        alert('Por favor, preencha todos os campos.');
         return;
     }
 
-    const dadosFormulario = new FormData();
-    dadosFormulario.append('Ong', campoOng);
-    dadosFormulario.append('Descricao', campoDescricao);
-    dadosFormulario.append('imagemOng', arquivoImagem);
-
     try {
+        const derkey = await fetch('../public.der');
+        const derbuffer = await derkey.arrayBuffer();
+        const pubkey = await crypto.subtle.importKey('spki', derbuffer, { name: 'RSA-OAEP', hash: 'SHA-1' }, false, ['encrypt']);
+        
+        const imagemBase64 = await converterParaBase64(arquivoImagem);
+        const dadosOriginais = JSON.stringify({ Ong: campoOng, Descricao: campoDescricao, imagem: imagemBase64 });
+        
+        const chaveAES = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const dadosCifrados = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, chaveAES, new TextEncoder().encode(dadosOriginais));
+        
+        const chaveAESRaw = await crypto.subtle.exportKey('raw', chaveAES);
+        const chaveAESCifrada = await crypto.subtle.encrypt({ name: 'RSA-OAEP' }, pubkey, chaveAESRaw);
+
+        const dadosFormulario = new FormData();
+        dadosFormulario.append('keyAESCifrada', toBase64(chaveAESCifrada));
+        dadosFormulario.append('msg_cifrada', toBase64(dadosCifrados));
+        dadosFormulario.append('iv', toBase64(iv));
+
         const resposta = await fetch('../controller/criacaoOngcontroller.php', {
             method: 'POST',
             body: dadosFormulario
         });
-
-        if (!resposta.ok) throw new Error('Erro na rede');
 
         const resultado = await resposta.json();
         
@@ -87,7 +119,7 @@ async function realizarCadastroUsuario() {
             alert('Erro: ' + resultado.mensagem);
         }
     } catch (erro) {
-        alert('Erro crítico: Não foi possível conectar ao servidor.' + erro);
+        alert('Erro crítico: Falha na criptografia ou conexão.');
         console.error("Detalhes do erro:", erro);
     }
 }

@@ -4,9 +4,27 @@ include __DIR__ . '/../config.php';
 session_start();
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    
+    if (!isset($_POST['keyAESCifrada'], $_POST['msg_cifrada'], $_POST['iv'])) {
+        echo json_encode(["sucesso" => false, "mensagem" => "Dados inválidos."]);
+        exit;
+    }
 
-    $rawOng = (isset($_POST['Ong'])) ? htmlspecialchars(trim($_POST['Ong'])) : '';
-    $rawDescricao = (isset($_POST['Descricao'])) ? htmlspecialchars(trim($_POST['Descricao'])) : '';
+    $keyAESCifrada = base64_decode($_POST['keyAESCifrada']);
+    $msgCifradaCompleta = base64_decode($_POST['msg_cifrada']);
+    $iv = base64_decode($_POST['iv']);
+
+    $privateKey = file_get_contents(__DIR__ . '/private.pem');
+    openssl_private_decrypt($keyAESCifrada, $chaveAES, $privateKey, OPENSSL_PKCS1_OAEP_PADDING);
+
+    $tag = substr($msgCifradaCompleta, -16);
+    $ciphertext = substr($msgCifradaCompleta, 0, -16);
+    $dadosDecodificadosJson = openssl_decrypt($ciphertext, 'aes-256-gcm', $chaveAES, OPENSSL_RAW_DATA, $iv, $tag);
+    $dadosOriginais = json_decode($dadosDecodificadosJson, true);
+    
+    $rawOng = htmlspecialchars(trim($dadosOriginais['Ong'] ?? ''));
+    $rawDescricao = htmlspecialchars(trim($dadosOriginais['Descricao'] ?? ''));
+    $imagemBase64 = $dadosOriginais['imagem'] ?? '';
 
     $rawProprietarioId = 0;
     if (!empty($_SESSION['usuario_id'])) {
@@ -21,48 +39,48 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
     $diretorioDestino = __DIR__ . '/../uploads/'; 
-    
     if (!is_dir($diretorioDestino)) {
         mkdir($diretorioDestino, 0755, true);
     }
     
-    if (!empty($rawOng) && !empty($rawDescricao) && $rawProprietarioId > 0 && isset($_FILES['imagemOng'])) {
+    if (!empty($rawOng) && !empty($rawDescricao) && !empty($imagemBase64) && $rawProprietarioId > 0) {
         
-        $arquivo = $_FILES['imagemOng'];
+        list($tipoMime, $dadosImagem) = explode(';', $imagemBase64);
+        list(, $dadosImagem) = explode(',', $dadosImagem);
+        $dadosImagemDecodificados = base64_decode($dadosImagem);
+        
+        $extensao = 'png';
+        if (strpos($tipoMime, 'jpeg') !== false || strpos($tipoMime, 'jpg') !== false) $extensao = 'jpg';
+        if (strpos($tipoMime, 'webp') !== false) $extensao = 'webp';
 
-        if ($arquivo['error'] === UPLOAD_ERR_OK) {
-            $extensao = pathinfo($arquivo['name'], PATHINFO_EXTENSION);
-            $novoNome = uniqid() . "." . $extensao; 
-            $caminhoCompleto = $diretorioDestino . $novoNome;
-            $caminhoBanco = 'uploads/' . $novoNome;
+        $novoNome = uniqid() . "." . $extensao; 
+        
+        $caminhoCompleto = $diretorioDestino . $novoNome;
+        $caminhoBanco = 'uploads/' . $novoNome;
 
-            if (move_uploaded_file($arquivo['tmp_name'], $caminhoCompleto)) {
-                try {
-                    $sql = "INSERT INTO ong (nome_ong, descricao, caminho_arquivo, fk_proprietario_id) VALUES (?, ?, ?, ?)";
-                    $stmt = $conn->prepare($sql);
-                    $stmt->bind_param("sssi", $rawOng, $rawDescricao, $caminhoBanco, $rawProprietarioId);
-                    $stmt->execute();
-                    $novoId = $conn->insert_id;
+        if (file_put_contents($caminhoCompleto, $dadosImagemDecodificados)) {
+            try {
+                $sql = "INSERT INTO ong (nome_ong, descricao, caminho_arquivo, fk_proprietario_id) VALUES (?, ?, ?, ?)";
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("sssi", $rawOng, $rawDescricao, $caminhoBanco, $rawProprietarioId);
+                $stmt->execute();
+                $novoId = $conn->insert_id;
 
-                    $resposta = ["sucesso" => true, "mensagem" => "Cadastro e upload realizados com sucesso!", "id_ong" => $novoId];
-                } catch (mysqli_sql_exception $e) {
-                    if (file_exists($caminhoCompleto)) unlink($caminhoCompleto);
-                    if ($e->getCode() == 1062) {
-                        $resposta = ["sucesso" => false, "mensagem" => "Erro: Nome já cadastrado."];
-                    } else {
-                        $resposta = ["sucesso" => false, "mensagem" => "Erro no banco de dados." . $e];
-                    }
+                echo json_encode(["sucesso" => true, "mensagem" => "Cadastro e upload realizados com sucesso!", "id_ong" => $novoId]);
+            } catch (mysqli_sql_exception $e) {
+                if (file_exists($caminhoCompleto)) unlink($caminhoCompleto);
+                if ($e->getCode() == 1062) {
+                    echo json_encode(["sucesso" => false, "mensagem" => "Erro: Nome da ONG já cadastrado."]);
+                } else {
+                    echo json_encode(["sucesso" => false, "mensagem" => "Erro no banco de dados."]);
                 }
-            } else {
-                $resposta = ["sucesso" => false, "mensagem" => "Erro ao mover o arquivo."];
             }
         } else {
-            $resposta = ["sucesso" => false, "mensagem" => "Erro no envio do arquivo."];
+            echo json_encode(["sucesso" => false, "mensagem" => "Erro ao mover o arquivo."]);
         }
     } else {
-        $resposta = ["sucesso" => false, "mensagem" => "Preencha todos os campos."];
+        echo json_encode(["sucesso" => false, "mensagem" => "Preencha todos os campos ou verifique o login."]);
     }
-    echo json_encode($resposta);
 } else {
     echo json_encode(["sucesso" => false, "mensagem" => "Acesso negado."]);
 }

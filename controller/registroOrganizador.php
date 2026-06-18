@@ -1,16 +1,36 @@
 <?php
 session_start();
-$meurastro = [];
 header('Content-Type: application/json; charset=utf-8');
 include __DIR__ . '/../config.php';
 require_once __DIR__ . '/check_banned_ip.php';
+
 checkBannedIp($conn);
+
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $rawcpf = isset($_POST['cpf']) ? trim($_POST['cpf']) : '';
-    $rawrg = isset($_POST['rg']) ? trim($_POST['rg']) : '';
-    $rawtelefone = isset($_POST['telefone']) ? trim($_POST['telefone']) : '';
     
-    $meurastro[] = "Dados recebidos: cpf='{$rawcpf}', rg='{$rawrg}', telefone='{$rawtelefone}'";
+    if (!isset($_POST['keyAESCifrada'], $_POST['msg_cifrada'], $_POST['iv'])) {
+        echo json_encode(["sucesso" => false, "mensagem" => "Dados inválidos ou não criptografados."]);
+        exit;
+    }
+
+
+    $keyAESCifrada = base64_decode($_POST['keyAESCifrada']);
+    $msgCifradaCompleta = base64_decode($_POST['msg_cifrada']);
+    $iv = base64_decode($_POST['iv']);
+
+    $privateKey = file_get_contents(__DIR__ . '/private.pem');
+    openssl_private_decrypt($keyAESCifrada, $chaveAES, $privateKey, OPENSSL_PKCS1_OAEP_PADDING);
+
+    $tag = substr($msgCifradaCompleta, -16);
+    $ciphertext = substr($msgCifradaCompleta, 0, -16);
+    $dadosDecodificadosJson = openssl_decrypt($ciphertext, 'aes-256-gcm', $chaveAES, OPENSSL_RAW_DATA, $iv, $tag);
+    $dadosOriginais = json_decode($dadosDecodificadosJson, true);
+
+
+    $rawcpf = isset($dadosOriginais['cpf']) ? trim($dadosOriginais['cpf']) : '';
+    $rawrg = isset($dadosOriginais['rg']) ? trim($dadosOriginais['rg']) : '';
+    $rawtelefone = isset($dadosOriginais['telefone']) ? trim($dadosOriginais['telefone']) : '';
+
 
     $regexCpf = '/^\d{3}\.?\d{3}\.?\d{3}-?\d{2}$/';
     $regexRg  = '/^\d{1,2}\.?\d{3}\.?\d{3}-?[\dXx]$/';
@@ -29,11 +49,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         exit();
     }
 
+
     if (!empty($rawcpf) && !empty($rawrg) && !empty($rawtelefone)) {
-        if ($DB_ENCRYPT_KEY === null) {
+        
+        if (!isset($DB_ENCRYPT_KEY) || $DB_ENCRYPT_KEY === null) {
             echo json_encode(["sucesso" => false, "mensagem" => "Chave de criptografia do BD não configurada. Execute generate_db_key.php."]);
             exit();
         }
+        
         try {
             if (isset($_SESSION['usuario_id'])) {
                 $idUsuario = $_SESSION['usuario_id'];
@@ -48,40 +71,30 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 
                 if ($stmt->execute()) {
                     $_SESSION['statusConta'] = 2; 
-                    $sql = "UPDATE usuario_verificacao SET statusConta = ? WHERE fk_usuario = ?";
-                    $stmt = $conn->prepare($sql);
-                    $stmt->bind_param("ii", $_SESSION['statusConta'], $idUsuario);
-                    $stmt->execute();
-                    $stmt->close();
-                    $conn->close();
-                    $resposta = [
+                    
+                    $sql_update = "UPDATE usuario_verificacao SET statusConta = ? WHERE fk_usuario = ?";
+                    $stmt_update = $conn->prepare($sql_update);
+                    $stmt_update->bind_param("ii", $_SESSION['statusConta'], $idUsuario);
+                    $stmt_update->execute();
+                    $stmt_update->close();
+                    
+                    echo json_encode([
                         "sucesso" => true,
                         "mensagem" => "Parabéns! Cadastro de organizador realizado com sucesso."
-                    ];
+                    ]);
                 } else {
-                    $resposta = ["sucesso" => false, "mensagem" => "Erro ao salvar os dados no banco."];
+                    echo json_encode(["sucesso" => false, "mensagem" => "Erro ao salvar os dados no banco."]);
                 }
+                $stmt->close();
             } else {
-                $resposta = [
-                    "sucesso" => false, 
-                    "mensagem" => "Sua sessão expirou. Por favor, faça login novamente."
-                ];
+                echo json_encode(["sucesso" => false, "mensagem" => "Sua sessão expirou. Por favor, faça login novamente."]);
             }
         } catch (mysqli_sql_exception $e) {
-            $resposta = [
-                "sucesso" => false,
-                "mensagem" => "Erro no banco de dados.",
-                "erro" => $e->getMessage()
-            ];
+            echo json_encode(["sucesso" => false, "mensagem" => "Erro no banco de dados.", "erro" => $e->getMessage()]);
         }
     } else {
-        $resposta = [
-            "sucesso" => false,
-            "mensagem" => "Dados inválidos. Preencha todos os campos.",
-            "debug" => $meurastro
-        ];
+        echo json_encode(["sucesso" => false, "mensagem" => "Preencha todos os campos corretamente."]);
     }
-    echo json_encode($resposta);
 } else {
     echo json_encode(["sucesso" => false, "mensagem" => "Acesso negado."]);
 }
