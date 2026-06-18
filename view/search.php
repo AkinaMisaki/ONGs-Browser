@@ -36,9 +36,19 @@ $ongs = searchONGs($query);
 
 <?php if (!empty($ongs)): ?>
     <?php foreach ($ongs as $ong): ?>
+        <?php
+            $caminho = $ong['caminho_arquivo'] ?? '';
+            if (empty($caminho)) {
+                $src = '../uploads/placeholder.png';
+            } elseif (preg_match('#^https?://#i', $caminho)) {
+                $src = $caminho;
+            } else {
+                $src = '../' . ltrim($caminho, '/');
+            }
+        ?>
         <div class="card">
             <img class="card-thumb"
-                 src="<?php echo !empty($ong['caminho_arquivo']) ? htmlspecialchars('../' . ltrim($ong['caminho_arquivo'], '/')) : '../uploads/placeholder.png'; ?>"
+                 src="<?php echo htmlspecialchars($src); ?>"
                  alt="<?php echo htmlspecialchars($ong['nome_ong']); ?>">
             <div class="card-corpo">
                 <div class="card-texto">

@@ -21,8 +21,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('ong-descricao').textContent = resultado.descricao;
 
             const img = document.getElementById('ong-imagem');
-            const caminho = resultado.caminho_arquivo ? resultado.caminho_arquivo.replace(/^\//, '') : 'uploads/placeholder.png';
-            img.src = '../' + caminho;
+            const caminho = resultado.caminho_arquivo;
+            if (!caminho) {
+                img.src = '../uploads/placeholder.png';
+            } else if (/^https?:\/\//i.test(caminho)) {
+                img.src = caminho;
+            } else {
+                img.src = '../' + caminho.replace(/^\//, '');
+            }
             img.alt = 'Imagem da ' + resultado.nome_ong;
             document.getElementById('ong-imagem-container').style.display = 'block';
 

@@ -45,9 +45,14 @@ $result = $conn->query($sql);
 
         if ($result->num_rows > 0) {
             while($row = $result->fetch_assoc()) {
-                $src = !empty($row['caminho_arquivo'])
-                    ? htmlspecialchars(ltrim($row['caminho_arquivo'], '/'))
-                    : 'uploads/placeholder.png';
+                $caminho = $row['caminho_arquivo'] ?? '';
+                if (empty($caminho)) {
+                    $src = 'uploads/placeholder.png';
+                } elseif (preg_match('#^https?://#i', $caminho)) {
+                    $src = htmlspecialchars($caminho);
+                } else {
+                    $src = htmlspecialchars(ltrim($caminho, '/'));
+                }
                 $alt = htmlspecialchars($row['nome_ong']);
                 $imgHtml = "<img class=\"card-thumb\" src=\"{$src}\" alt=\"{$alt}\">";
 
