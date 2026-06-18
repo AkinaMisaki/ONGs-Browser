@@ -18,8 +18,22 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $msgCifradaCompleta = base64_decode($_POST['msg_cifrada']);
     $iv = base64_decode($_POST['iv']);
 
-    $privateKey = file_get_contents(__DIR__ . '/private.pem');
-    openssl_private_decrypt($keyAESCifrada, $chaveAES, $privateKey, OPENSSL_PKCS1_OAEP_PADDING);
+    $pvkeyPath = '/var/www/config/private.pem';
+    if (!file_exists($pvkeyPath)) {
+        echo json_encode(["sucesso" => false, "mensagem" => "Chave privada não encontrada."]);
+        exit;
+    }
+
+    $pvkey = openssl_pkey_get_private(file_get_contents($pvkeyPath));
+    if (!$pvkey) {
+        echo json_encode(["sucesso" => false, "mensagem" => "Falha ao carregar chave privada RSA."]);
+        exit;
+    }
+
+    if (!openssl_private_decrypt($keyAESCifrada, $chaveAES, $pvkey, OPENSSL_PKCS1_OAEP_PADDING)) {
+        echo json_encode(["sucesso" => false, "mensagem" => "Falha ao decifrar chave AES com RSA."]);
+        exit;
+    }
 
     $tag = substr($msgCifradaCompleta, -16);
     $ciphertext = substr($msgCifradaCompleta, 0, -16);
