@@ -6,6 +6,11 @@
 
 include __DIR__ . '/../config.php';
 
+if (!$conn->select_db('universidade')) {
+    echo "ERRO ao selecionar banco 'universidade': " . $conn->error . "\n";
+    exit(1);
+}
+
 if ($DB_ENCRYPT_KEY === null) {
     echo "ERRO: DB_ENCRYPT_KEY nao configurada.\n";
     exit(1);
