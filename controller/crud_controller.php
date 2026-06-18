@@ -56,6 +56,19 @@ switch ($action) {
 
 // ── Funções auxiliares ─────────────────────────────────────────────────────
 
+// Colunas cifradas com AES (db_decrypt/aes_encrypt) por tabela — mesmo conjunto
+// migrado em config/migrate_encrypt_existing.php. O CRUD precisa saber disso
+// pra não exibir/gravar ciphertext bruto.
+const ENCRYPTED_COLUMNS = [
+    'usuario'             => ['nome_usuario', 'email'],
+    'proprietario_ong'    => ['cpf', 'rg', 'telefone'],
+    'usuario_verificacao' => ['telegram_id', 'codVerificador'],
+];
+
+function isEncryptedColumn(string $table, string $name): bool {
+    return in_array($name, ENCRYPTED_COLUMNS[$table] ?? [], true);
+}
+
 // Detecta se uma coluna é de senha pelo nome (mesmo critério do registro_usuario.php)
 function isPasswordColumn(string $name): bool {
     $name = strtolower($name);
@@ -166,15 +179,21 @@ function describeTable() {
 
 // Busca todos os registros da tabela (limite de 500 pra não sobrecarregar)
 function listRecords() {
-    global $conn;
+    global $conn, $DB_ENCRYPT_KEY;
     $table = $_GET['table'] ?? '';
     if (!$table || !isValidTable($table)) {
         echo json_encode(['sucesso' => false, 'mensagem' => 'Tabela inválida.']);
         return;
     }
     $result = $conn->query("SELECT * FROM `$table` LIMIT 500");
+    $encryptedCols = ENCRYPTED_COLUMNS[$table] ?? [];
     $rows = [];
     while ($row = $result->fetch_assoc()) {
+        foreach ($encryptedCols as $col) {
+            if (isset($row[$col]) && $row[$col] !== '') {
+                $row[$col] = db_decrypt($row[$col], $DB_ENCRYPT_KEY);
+            }
+        }
         $rows[] = $row;
     }
     echo json_encode(['sucesso' => true, 'data' => $rows]);
@@ -183,7 +202,7 @@ function listRecords() {
 // Insere um novo registro na tabela.
 // Colunas com auto_increment são ignoradas — o banco gera o valor sozinho.
 function createRecord() {
-    global $conn;
+    global $conn, $DB_ENCRYPT_KEY;
     $table = $_POST['__table'] ?? '';
     if (!$table || !isValidTable($table)) {
         echo json_encode(['sucesso' => false, 'mensagem' => 'Tabela inválida.']);
@@ -205,6 +224,9 @@ function createRecord() {
         // Colunas de senha são hasheadas com Argon2ID antes de salvar
         if ($raw !== '' && isPasswordColumn($name)) {
             $raw = hashPassword($raw);
+        } elseif ($raw !== '' && isEncryptedColumn($table, $name)) {
+            // Colunas cifradas com AES — nunca grava o valor em texto puro
+            $raw = aes_encrypt($raw, $DB_ENCRYPT_KEY);
         }
         // String vazia vira NULL pra respeitar campos opcionais
         $values[] = $raw === '' ? null : $raw;
@@ -233,7 +255,7 @@ function createRecord() {
 // Atualiza um registro existente.
 // O front envia __pk_col (nome da PK) e __pk_val (valor da PK) pra identificar o registro.
 function updateRecord() {
-    global $conn;
+    global $conn, $DB_ENCRYPT_KEY;
     $table  = $_POST['__table']   ?? '';
     $pkCol  = $_POST['__pk_col']  ?? '';  // ex: "id"
     $pkVal  = $_POST['__pk_val']  ?? '';  // ex: "42"
@@ -262,6 +284,9 @@ function updateRecord() {
         // Senha preenchida? Aplica Argon2ID antes de salvar
         if ($raw !== '' && isPasswordColumn($name)) {
             $raw = hashPassword($raw);
+        } elseif ($raw !== '' && isEncryptedColumn($table, $name)) {
+            // Colunas cifradas com AES — nunca grava o valor em texto puro
+            $raw = aes_encrypt($raw, $DB_ENCRYPT_KEY);
         }
         $setClauses[] = "`$name` = ?";
         $values[]     = $raw === '' ? null : $raw;

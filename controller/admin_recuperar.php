@@ -166,8 +166,10 @@ if ($action === 'confirm_2fa') {
         exit;
     }
 
+    $secretCifrado = aes_encrypt($secret, $DB_ENCRYPT_KEY);
+
     $stmt = $conn->prepare("UPDATE usuario_verificacao SET codVerificador = ? WHERE fk_usuario = ?");
-    $stmt->bind_param("si", $secret, $adminId);
+    $stmt->bind_param("si", $secretCifrado, $adminId);
     $stmt->execute();
     $stmt->close();
 

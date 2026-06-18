@@ -18,6 +18,7 @@ let currentTable   = null;
 let currentColumns = [];
 let currentPkCol   = null;
 let editingRow     = null;
+let currentRows    = [];
 
 // ── Inicialização ──────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
@@ -210,6 +211,8 @@ function renderTable(rows) {
     const head = document.getElementById('tableHead');
     const body = document.getElementById('tableBody');
 
+    currentRows = rows;
+
     head.innerHTML = currentColumns.map(c => `<th>${c.COLUMN_NAME}</th>`).join('') + '<th>Ações</th>';
 
     if (!rows.length) {
@@ -217,7 +220,7 @@ function renderTable(rows) {
         return;
     }
 
-    body.innerHTML = rows.map(row => {
+    body.innerHTML = rows.map((row, idx) => {
         const cells = currentColumns.map(c =>
             `<td title="${escHtml(row[c.COLUMN_NAME])}">${escHtml(row[c.COLUMN_NAME])}</td>`
         ).join('');
@@ -225,7 +228,7 @@ function renderTable(rows) {
         const pkVal = currentPkCol ? row[currentPkCol] : null;
         const actions = pkVal !== null
             ? `<td class="acoes">
-                 <button class="btn-editar" onclick='editarRegistro(${JSON.stringify(row)})'>Editar</button>
+                 <button class="btn-editar" onclick="editarRegistro(${idx})">Editar</button>
                  <button class="btn-excluir" onclick="excluirRegistro('${escHtml(pkVal)}')">Excluir</button>
                </td>`
             : `<td class="acoes"><em>sem PK</em></td>`;
@@ -249,7 +252,8 @@ function fecharModal() {
     editingRow = null;
 }
 
-function editarRegistro(row) {
+function editarRegistro(idx) {
+    const row = currentRows[idx];
     editingRow = row;
     document.getElementById('modalTitulo').textContent = 'Editar Registro';
     document.getElementById('formFields').innerHTML = buildFormFields(row);

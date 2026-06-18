@@ -37,7 +37,7 @@ try {
         $stmtChk->execute();
         $rowChk = $stmtChk->get_result()->fetch_assoc();
         if ($rowChk) {
-            reply($chat_id, "Este Telegram já está conectado à conta " . $rowChk['nome_usuario'] . ". Desconecte primeiro pelo site se quiser vincular outra conta.");
+            reply($chat_id, "Este Telegram já está conectado à conta " . db_decrypt($rowChk['nome_usuario'], $DB_ENCRYPT_KEY) . ". Desconecte primeiro pelo site se quiser vincular outra conta.");
             exit;
         }
 
@@ -66,7 +66,7 @@ try {
                 $stmt2 = $conn->prepare("UPDATE usuario_verificacao SET telegram_id = ?, telegram_id_hash = ?, telegram_pass = NULL WHERE telegram_pass = ?");
                 $stmt2->bind_param("sss", $chatIdCifrado, $chatIdHash, $t[1]);
                 $stmt2->execute();
-                reply($chat_id, "Conectado com a conta " . $usuario['nome_usuario'] . " com sucesso!");
+                reply($chat_id, "Conectado com a conta " . db_decrypt($usuario['nome_usuario'], $DB_ENCRYPT_KEY) . " com sucesso!");
             }
         } else {
             reply($chat_id, 'Passkey inválida. Vá para a página de gerenciamento de conta e gere uma nova clicando em "Conectar Telegram".');

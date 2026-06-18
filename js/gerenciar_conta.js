@@ -35,16 +35,23 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        containerDados.innerHTML = entradas.map(([chave, valor]) => `
-            <div class="dado-row">
+        containerDados.innerHTML = entradas.map(([chave]) => `
+            <div class="dado-row" data-chave="${chave}">
                 <label class="checkbox-label dado-check-label">
                     <input type="checkbox" name="campos_exclusao[]" value="${chave}" class="dado-check">
                     <strong>${labels[chave] || chave.toUpperCase()}</strong>
                 </label>
-                <span class="dado-valor oculto">${valor}</span>
+                <span class="dado-valor oculto"></span>
                 <button type="button" class="btn-revelar">Mostrar</button>
             </div>
         `).join('');
+
+        // Valor real é inserido via textContent (não interpolado na string HTML)
+        // pra evitar que dado pessoal decifrado quebre o markup ou injete HTML.
+        containerDados.querySelectorAll('.dado-row').forEach(row => {
+            const valor = dados[row.dataset.chave];
+            row.querySelector('.dado-valor').textContent = valor;
+        });
 
         containerDados.querySelectorAll('.btn-revelar').forEach(btn => {
             btn.addEventListener('click', function () {
