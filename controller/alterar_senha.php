@@ -9,14 +9,63 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 }
 
 // Check de Cross Site Request Forgery
-if (empty($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
-    echo json_encode(['sucesso' => false, 'mensagem' => 'invalid_csrf']);
+
+// 1. recebe o payload JSON em plain text
+$payloadStr = file_get_contents('php://input');
+$payload = json_decode($payloadStr, true);
+
+if (!$payload || empty($payload['keyAESCifrada']) || empty($payload['msg_cifrada']) || empty($payload['iv'])) {
+    echo json_encode(['sucesso' => false, 'mensagem' => 'invalid_payload']);
     exit;
 }
 
-$token           = trim($_POST['token'] ?? '');
-$password        = $_POST['password']         ?? '';
-$passwordConfirm = $_POST['password_confirm'] ?? '';
+// 2. decodifica base 64
+$keyCifrada = base64_decode($payload['keyAESCifrada'], true);
+$msgCifrada = base64_decode($payload['msg_cifrada'], true);
+$iv         = base64_decode($payload['iv'], true);
+
+// 3. abri a chave AES usando a chave privada RSA do servidor
+$pvkeyPath = '/var/www/config/private.pem'; // caminho
+if (!file_exists($pvkeyPath)) {
+    echo json_encode(['sucesso' => false, 'mensagem' => 'config_error']);
+    exit;
+}
+
+$pvkey = openssl_pkey_get_private(file_get_contents($pvkeyPath));
+$chaveAES = '';
+if (!openssl_private_decrypt($keyCifrada, $chaveAES, $pvkey, OPENSSL_PKCS1_OAEP_PADDING)) {
+    echo json_encode(['sucesso' => false, 'mensagem' => 'decryption_error']);
+    exit;
+}
+
+// 4. separa a tag de autenticação do GCM e abrir a mensagem
+$tag    = substr($msgCifrada, -16);
+$cipher = substr($msgCifrada, 0, -16);
+$jsonDescriptografado = openssl_decrypt($cipher, 'aes-256-gcm', $chaveAES, OPENSSL_RAW_DATA, $iv, $tag);
+
+if ($jsonDescriptografado === false) {
+    echo json_encode(['sucesso' => false, 'mensagem' => 'decryption_error']);
+    exit;
+}
+
+// 5. extrai os dados reais do formulario
+$formDados = json_decode($jsonDescriptografado, true);
+
+if (!$formDados) {
+    echo json_encode(['sucesso' => false, 'mensagem' => 'decryption_error']);
+    exit;
+}
+
+$csrfToken       = $formDados['csrf_token'] ?? '';
+$token           = trim($formDados['token'] ?? '');
+$password        = $formDados['password'] ?? '';
+$passwordConfirm = $formDados['password_confirm'] ?? '';
+
+// 6. fazer a verificação do CSRF 
+if (empty($csrfToken) || $csrfToken !== $_SESSION['csrf_token']) {
+    echo json_encode(['sucesso' => false, 'mensagem' => 'invalid_csrf']);
+    exit;
+}
 
 // Valida o token e a senha
 if (empty($token)) {

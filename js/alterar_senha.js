@@ -1,5 +1,10 @@
 document.addEventListener('DOMContentLoaded', function () {
 
+    function toBase64(buffer) {
+    return btoa(String.fromCharCode(...new Uint8Array(buffer)));
+}
+
+
     const form = document.getElementById('resetForm');
     if (!form) return;
 
@@ -32,17 +37,50 @@ document.addEventListener('DOMContentLoaded', function () {
         btn.disabled = true;
         btn.textContent = 'Alterando...';
 
-        // Constroi um form pro controller com os dados
-        const dadosFormulario = new FormData();
-        dadosFormulario.append('token',            token);
-        dadosFormulario.append('password',         password);
-        dadosFormulario.append('password_confirm', passwordConfirm);
-        dadosFormulario.append('csrf_token',       csrfToken);
+try {
+            // etapa 1:  importar a chave publica
+            const derResp = await fetch('../public.der');
+            if (!derResp.ok) throw new Error('Falha ao carregar chave pública do servidor.');
+            const derbuffer = await derResp.arrayBuffer();
+            
+            const pubkey = await crypto.subtle.importKey(
+                'spki', derbuffer, { name: 'RSA-OAEP', hash: 'SHA-1' }, false, ['encrypt']
+            );
 
-        try {
+            // etapa 2: gerar chave aes da sessao
+            const chaveAES = await crypto.subtle.generateKey(
+                { name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']
+            );
+
+            // etapa 3: empacota  os dados da nova senha
+            // 
+            const dados = JSON.stringify({ 
+                token: token, 
+                password: password, 
+                password_confirm: passwordConfirm, 
+                csrf_token: csrfToken 
+            });
+            
+            const iv = crypto.getRandomValues(new Uint8Array(12));
+            const dadosCifrados = await crypto.subtle.encrypt(
+                { name: 'AES-GCM', iv }, chaveAES, new TextEncoder().encode(dados)
+            );
+
+            // Etapa 4: Esconder a Chave AES
+            const chaveAESRaw = await crypto.subtle.exportKey('raw', chaveAES);
+            const chaveAESCifrada = await crypto.subtle.encrypt(
+                { name: 'RSA-OAEP' }, pubkey, chaveAESRaw
+            );
+
+            // Etapa 5: envia o jason criptografado
             const resposta = await fetch('../controller/alterar_senha.php', {
                 method: 'POST',
-                body: dadosFormulario
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    keyAESCifrada: toBase64(chaveAESCifrada),
+                    msg_cifrada:   toBase64(dadosCifrados),
+                    iv:            toBase64(iv)
+                })
             });
 
             if (!resposta.ok) throw new Error(`HTTP ${resposta.status}`);
