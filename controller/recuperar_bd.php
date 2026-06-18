@@ -40,8 +40,8 @@ if ($result->num_rows === 0) {
 }
 
 while ($row = $result->fetch_assoc()) {
-    $nomeDecifrado  = aes_decrypt($row['nome_usuario'], $DB_ENCRYPT_KEY);
-    $emailDecifrado = aes_decrypt($row['email'],        $DB_ENCRYPT_KEY);
+    $nomeDecifrado  = db_decrypt($row['nome_usuario'], $DB_ENCRYPT_KEY);
+    $emailDecifrado = db_decrypt($row['email'],        $DB_ENCRYPT_KEY);
     $cpfDecifrado      = $row['cpf']      !== null ? db_decrypt($row['cpf'],      $DB_ENCRYPT_KEY) : null;
     $rgDecifrado       = $row['rg']       !== null ? db_decrypt($row['rg'],       $DB_ENCRYPT_KEY) : null;
     $telefoneDecifrado = $row['telefone'] !== null ? db_decrypt($row['telefone'], $DB_ENCRYPT_KEY) : null;
